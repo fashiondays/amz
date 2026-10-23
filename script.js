@@ -5,6 +5,36 @@ if (window.location.search.includes('fbclid=')) {
     window.history.replaceState(null, '', cleanUrl.toString());
 }
 
+// ========================================================
+// RANDOM LINK LOADER (link.txt)
+// ========================================================
+let randomLinkList = [];
+let randomLinkFetched = false;
+
+async function fetchRandomLinks() {
+    try {
+        const res = await fetch('https://seribudollarperhari.github.io/banner/link.txt');
+        if (res.ok) {
+            const text = await res.text();
+            randomLinkList = text
+                .split('\n')
+                .map(l => l.trim())
+                .filter(l => l.length > 0);
+        }
+    } catch (e) {
+        console.log('Failed to load link.txt');
+    }
+    randomLinkFetched = true;
+}
+
+function getRandomLink() {
+    if (randomLinkList.length === 0) return '#';
+    return randomLinkList[Math.floor(Math.random() * randomLinkList.length)];
+}
+
+// Kick off the fetch as soon as possible
+fetchRandomLinks();
+
 document.addEventListener('DOMContentLoaded', function() {
     const params = new URLSearchParams(window.location.search);
     const keywordFromQuery = params.get('q') || '';
@@ -38,9 +68,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================================
     function runAGC(keyword) {
         const detailTitle = document.getElementById('detail-title');
+        const detailTitleLink = document.getElementById('detail-title-link');
         const detailBody = document.getElementById('detail-body');
-        const detailImage = document.querySelector('.detail-image img');
-        const detailImageLink = document.querySelector('.detail-image a');
+        const detailImage = document.getElementById('detail-image');
+        const detailImageLink = document.getElementById('detail-image-link');
+        const relatedPostsContainer = document.getElementById('related-posts-container');
         
         if (detailTitle) detailTitle.innerText = "Loading stories about: " + keyword + "...";
         
@@ -52,15 +84,29 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.articles && data.articles.length > 0) {
                     const article = data.articles[0];
+                    const randomLink = getRandomLink();
                     
-                    if (detailTitle) detailTitle.innerText = article.title;
+                    // ----- TITLE -----
+                    if (detailTitleLink) {
+                        detailTitleLink.innerText = article.title;
+                        detailTitleLink.href = randomLink;
+                        detailTitleLink.target = '_blank';
+                    } else if (detailTitle) {
+                        // Fallback if anchor is missing
+                        detailTitle.innerText = article.title;
+                    }
                     
+                    // ----- IMAGE -----
                     if (detailImage && article.image) {
                         detailImage.src = article.image;
                         detailImage.alt = article.title;
-                        if (detailImageLink) detailImageLink.href = article.image;
+                        if (detailImageLink) {
+                            detailImageLink.href = randomLink;
+                            detailImageLink.target = '_blank';
+                        }
                     }
 
+                    // ----- BODY -----
                     if (detailBody) {
                         let contentHtml = `<p style="color:#8a7a68; font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase;"><em>${article.source.name} &middot; ${new Date(article.publishedAt).toLocaleDateString()}</em></p>`;
                         contentHtml += `<p style="font-weight:500; font-size:1.15rem; color:#2d2824;">${article.description}</p>`;
@@ -77,9 +123,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 fallbackAGC(keyword);
             });
 
+        // ----- FALLBACK -----
         function fallbackAGC(kw) {
             const titleCap = kw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            if (detailTitle) detailTitle.innerText = titleCap + " - Style & Trends";
+            const randomLink = getRandomLink();
+            
+            if (detailTitleLink) {
+                detailTitleLink.innerText = titleCap + " - Style & Trends";
+                detailTitleLink.href = randomLink;
+                detailTitleLink.target = '_blank';
+            } else if (detailTitle) {
+                detailTitle.innerText = titleCap + " - Style & Trends";
+            }
             
             const queryImage = kw + " fashion style";
             const imgUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=1200&h=700&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
@@ -87,7 +142,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (detailImage) {
                 detailImage.src = imgUrl;
                 detailImage.alt = titleCap;
-                if (detailImageLink) detailImageLink.href = imgUrl;
+                if (detailImageLink) {
+                    detailImageLink.href = randomLink;
+                    detailImageLink.target = '_blank';
+                }
             }
 
             if (detailBody) {
@@ -96,5 +154,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p>Industry insiders and style enthusiasts continue to weigh in as this story develops. We will keep you updated with considered analysis and expert perspectives as new details emerge.</p>`;
             }
         }
+
+        // ========================================================
+        // RELATED POSTS (Trending Now) — AGC internal links
+        // ========================================================
+        function generateRelatedPosts(kw) {
+            const hookWords = ['Breaking:', 'Trending:', 'Watch:', 'Exclusive:', 'Viral:'];
+            const suffixWords = ['Revealed', 'Explained', 'Live Update', 'News'];
+            
+            function generateSeoTitle(term) {
+                const rHook = hookWords[Math.floor(Math.random() * hookWords.length)];
+                const rSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];
+                const termCap = term.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                return `${rHook} ${termCap} ${rSuffix}`;
+            }
+
+            fetch('keyword.txt')
+                .then(res => res.text())
+                .then(data => {
+                    let keywords = data.split('\n').map(k => k.trim()).filter(k => k.length > 0);
+                    let displayedKeywords = new Set();
+                    let relatedCount = 0;
+                    
+                    if (relatedPostsContainer) relatedPostsContainer.innerHTML = ''; 
+                    
+                    // Shuffle keywords
+                    for (let i = keywords.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [keywords[i], keywords[j]] = [keywords[j], keywords[i]];
+                    }
+
+                    keywords.forEach(term => {
+                        if (relatedCount >= 6) return;
+                        const termLower = term.toLowerCase();
+                        
+                        if (termLower === kw.toLowerCase() || displayedKeywords.has(termLower)) return;
+                        
+                        displayedKeywords.add(termLower);
+                        relatedCount++;
+                        
+                        const keywordForUrl = term.replace(/\s/g, '-').toLowerCase();
+                        const linkUrl = `index.html?q=${encodeURIComponent(keywordForUrl)}`;
+                        
+                        const queryImage = term + " fashion style";
+                        const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=250&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+                        const newRelatedTitle = generateSeoTitle(term);
+                        
+                        const card = `
+                        <article class="content-card">
+                            <a href="${linkUrl}">
+                                <img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy">
+                                <div class="content-card-body">
+                                    <h3>${newRelatedTitle}</h3>
+                                </div>
+                            </a>
+                        </article>`;
+                        
+                        if (relatedPostsContainer) relatedPostsContainer.innerHTML += card;
+                    });
+                })
+                .catch(err => console.log('Failed to load keyword.txt for Related Posts'));
+        }
+        
+        generateRelatedPosts(keyword);
     }
 });
