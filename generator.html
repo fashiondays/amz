@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style Edit - Static Content Generator Tool</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #faf8f5;
+            color: #3a332e;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(45, 40, 36, 0.04), 0 10px 40px rgba(45, 40, 36, 0.06);
+            border: 1px solid #e8e0d5;
+            border-top: 3px solid #b8975f;
+        }
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-style: italic;
+            color: #2d2824;
+            margin-bottom: 6px;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 0.72rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: #8a7a68;
+            margin-bottom: 30px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #e8e0d5;
+        }
+        .form-group { margin-bottom: 22px; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d2824;
+            font-size: 0.78rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 13px 16px;
+            border: 1px solid #e8e0d5;
+            background-color: #faf8f5;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: #3a332e;
+            transition: border-color 0.2s ease;
+        }
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #b8975f;
+        }
+        textarea { height: 250px; resize: vertical; line-height: 1.7; }
+        .note {
+            font-size: 0.8rem;
+            color: #8a7a68;
+            margin-top: 8px;
+            font-style: italic;
+            line-height: 1.5;
+        }
+        
+        .settings-box {
+            background-color: #f5ede0;
+            padding: 22px;
+            border-left: 3px solid #b8975f;
+            margin-bottom: 25px;
+        }
+        .settings-box h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            color: #2d2824;
+            font-style: italic;
+        }
+        
+        .recommendation-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5ede0;
+            border-left: 3px solid #b8975f;
+            display: none;
+            transition: all 0.3s ease;
+        }
+        .recommendation-box textarea {
+            height: 100px;
+            background-color: #fff;
+            margin-bottom: 10px;
+            resize: none;
+        }
+        
+        button {
+            width: 100%;
+            background-color: #2d2824;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-family: inherit;
+        }
+        button:hover { background-color: #b8975f; }
+        
+        .copy-btn {
+            background-color: #b8975f;
+            margin-top: 8px;
+        }
+        .copy-btn:hover { background-color: #9a7d4a; }
+        
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #2d2824;
+            color: #fff;
+            text-align: center;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transition: visibility 0.3s, bottom 0.3s;
+            letter-spacing: 0.05em;
+        }
+        #toast.show {
+            visibility: visible;
+            bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <h2>Style Edit Generator</h2>
+    <p class="subtitle">Curated Fashion Content Tool</p>
+    
+    <div class="settings-box">
+        <h3>In-App Redirect Settings</h3>
+        <label for="redirect-url">Custom Target Link (Monetization URL):</label>
+        <input type="text" id="redirect-url" placeholder="Optional: https://your-monetization-link.com/..." autocomplete="off">
+        <div class="note"><strong>Auto-saved.</strong> If left empty, the 'Continue' button will redirect to this article's own <strong>Link Article</strong>.</div>
+    </div>
+    
+    <div class="form-group">
+        <label for="thumbnail">Thumbnail Image URL:</label>
+        <input type="text" id="thumbnail" placeholder="Example: https://domain.com/fashion-image.jpg" autocomplete="off">
+        <div class="note">Enter the direct image URL.</div>
+    </div>
+    
+    <div class="form-group">
+        <label for="content">Article Content:</label>
+        <textarea id="content" placeholder="Top line must be the Article Title (H1)&#10;&#10;First paragraph goes here...&#10;&#10;Second paragraph goes here..."></textarea>
+    </div>
+    
+    <button onclick="generateAndDownload()">Generate Static HTML</button>
+    <div id="rec-box" class="recommendation-box">
+        <label for="share-preview">Ready-to-Share Content (Copy & Paste):</label>
+        <textarea id="share-preview" readonly></textarea>
+        <button class="copy-btn" onclick="copyPreview()">Copy Content & Link</button>
+    </div>
+</div>
+<div id="toast">Notification</div>
+
+<script>
+let baseDomain = "https://styleedit-fashion.github.io/"; 
+let currentRandomCode = ""; 
+
+function showToast(message, isSuccess = true, duration = 3000) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.style.backgroundColor = isSuccess ? "#2d2824" : "#a13c2b"; 
+    toast.className = "show";
+    setTimeout(() => { 
+        toast.className = toast.className.replace("show", ""); 
+    }, duration);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const redirectInput = document.getElementById("redirect-url");
+    const savedRedirectUrl = localStorage.getItem("customRedirectUrl");
+    
+    if (savedRedirectUrl) {
+        redirectInput.value = savedRedirectUrl;
+    }
+    redirectInput.addEventListener("input", function() {
+        localStorage.setItem("customRedirectUrl", this.value.trim());
+    });
+    redirectInput.addEventListener("change", function() {
+        showToast("Redirect link auto-saved!", true, 2000);
+    });
+});
+
+function generateRandomCode(length) {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+fetch('domain.txt')
+    .then(response => response.text())
+    .then(data => {
+        let domain = data.trim();
+        if (domain) {
+            domain = domain.replace(/\[.*?\]\s*/g, '').replace(/\s*/gi, '').trim(); 
+            if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
+                domain = 'https://' + domain;
+            }
+            if (!domain.endsWith('/')) { domain += '/'; }
+            baseDomain = domain;
+        }
+    })
+    .catch(err => {
+        console.log('domain.txt file not found.');
+    });
+
+function updatePreviewUrl(h1Text, fullUrl) {
+    const shareText = `${h1Text}\n\n${fullUrl}`;
+    const recBox = document.getElementById('rec-box');
+    const sharePreview = document.getElementById('share-preview');
+    
+    sharePreview.value = shareText;
+    recBox.style.display = 'block';
+    
+    recBox.style.backgroundColor = '#e8f0d8';
+    recBox.style.borderLeftColor = '#7a9a4a';
+    setTimeout(() => {
+        recBox.style.backgroundColor = '#f5ede0';
+        recBox.style.borderLeftColor = '#b8975f';
+    }, 1500);
+}
+
+function copyPreview() {
+    const copyText = document.getElementById("share-preview");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); 
+    
+    navigator.clipboard.writeText(copyText.value).then(() => {
+        showToast("Content and link copied!", true);
+    }).catch(err => {
+        document.execCommand("copy");
+        showToast("Content and link copied!", true);
+    });
+}
+
+function generateAndDownload() {
+    const thumbnailVal = document.getElementById('thumbnail').value.trim();
+    const contentInputVal = document.getElementById('content').value.trim();
+    
+    if (!thumbnailVal || !contentInputVal) {
+        showToast('Please fill in both the Thumbnail URL and Article Content!', false);
+        return;
+    }
+    
+    const lines = contentInputVal.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    if (lines.length < 1) {
+        showToast('Article must have at least a Title (H1)!', false);
+        return;
+    }
+    
+    showToast("Processing HTML file...", true, 2000);
+    
+    const rawH1Title = lines[0]; 
+    const textOnlyH1Title = rawH1Title.replace(/<[^>]*>?/gm, ''); 
+    const h1Title = textOnlyH1Title.replace(/"/g, '&quot;'); 
+    
+    const remainingParagraphs = lines.slice(1);
+    currentRandomCode = generateRandomCode(12);
+    const articleFullUrl = baseDomain + currentRandomCode;
+    updatePreviewUrl(textOnlyH1Title, articleFullUrl);
+    
+    let customInputUrl = document.getElementById("redirect-url").value.trim();
+    let targetUrl = customInputUrl !== "" ? customInputUrl : articleFullUrl;
+    
+    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+        targetUrl = 'https://' + targetUrl;
+    }
+    
+    let parsedUrl;
+    try {
+        parsedUrl = new URL(targetUrl);
+    } catch(e) {
+        parsedUrl = new URL("https://" + targetUrl.replace(/^https?:\/\//, ''));
+    }
+    
+    let intentTarget = parsedUrl.host + parsedUrl.pathname + parsedUrl.search;
+    let normalHref = parsedUrl.href;
+    let fallbackEncoded = encodeURIComponent(normalHref);
+    
+    const fileName = currentRandomCode + '.html';
+    
+    const tagScript = '<scr' + 'ipt type="text/javascript" src="';
+    const tagClose = '"></scr' + 'ipt>';
+    const inlineScriptOpen = '<scr' + 'ipt>';
+    const inlineScriptClose = '</scr' + 'ipt>';
+    
+    let imageLinkHtml = `<div class="detail-image"><a href="${thumbnailVal}" target="_blank" title="View Image"><img src="${thumbnailVal}" alt="${h1Title}"></a></div>`;
+    let pBodyHtml = remainingParagraphs.map(p => `<p>${p}</p>`).join('\n');
+    
+    let finalHtmlOutput = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${h1Title} | Style Edit</title>
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <center>${tagScript}https://seribudollarperhari.github.io/banner/ad1.js${tagClose}</center>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo-link"><div class="logo">Style Edit</div></a>
+        </div>
+    </header>
+    <center>${tagScript}https://seribudollarperhari.github.io/banner/ad2.js${tagClose}</center>
+    
+    <main>
+        <div class="container">
+            <article class="main-article">
+                <h1 id="detail-title">${h1Title}</h1>
+                ${imageLinkHtml}
+                <div id="detail-body" class="article-content">
+                    ${pBodyHtml}
+                </div>
+            </article>
+            
+            <center>${tagScript}https://seribudollarperhari.github.io/banner/ad3.js${tagClose}</center>
+        </div>
+    </main>
+    <center>${tagScript}https://seribudollarperhari.github.io/banner/nativ.js${tagClose}</center>
+    <footer>
+        <div class="container"><p>&copy; 2026 Style Edit - Curated Fashion Inspiration.</p></div>
+    </footer>
+    
+    ${inlineScriptOpen}
+        if (window.location.search.includes('fbclid=')) {
+            let cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('fbclid');
+            window.history.replaceState(null, '', cleanUrl.toString());
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isInAppBrowser = /FBAN|FBAV|Instagram|TikTok|Line|Twitter|Threads/i.test(ua);
+            const isAndroid = /android/i.test(ua);
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+            
+            if (isInAppBrowser) {
+                let actionHTML = '';
+                if (isAndroid) {
+                    const intentUrl = "intent://${intentTarget}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallbackEncoded};end";
+                    actionHTML = '<a href="' + intentUrl + '" class="ia-btn primary">Continue</a>';
+                } else if (isIOS) {
+                    actionHTML = '<span style="font-size:13px; color:#8a7a68; text-align:right; font-weight:600;">Tap <b>...</b> (menu)<br>Open in Safari</span>';
+                } else {
+                    actionHTML = '<a href="${normalHref}" class="ia-btn primary">Continue</a>';
+                }
+                const sheetCSS = '<style>.ia-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(45,40,36,0.6);z-index:999998;display:flex;align-items:flex-end;justify-content:center}.ia-sheet{width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:25px 20px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;box-shadow:0 -4px 15px rgba(0,0,0,0.1);animation:slideUp 0.3s ease-out forwards}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}.ia-header{text-align:center;font-size:17px;font-weight:700;color:#2d2824;padding-bottom:15px;border-bottom:1px solid #e8e0d5;margin-bottom:20px}.ia-row{display:flex;align-items:center;justify-content:space-between}.ia-left{display:flex;align-items:center;gap:15px}.ia-icon{width:42px;height:42px}.ia-text{font-size:16px;font-weight:600;color:#2d2824}.ia-btn{background:#e8e0d5;color:#2d2824;font-size:15px;font-weight:600;padding:10px 24px;border-radius:24px;text-decoration:none;transition:0.2s}.ia-btn.primary{background:#b8975f;color:#fff}</style>';
+                
+                const sheetHTML = '<div class="ia-overlay"><div class="ia-sheet"><div class="ia-header">Open Style Edit in...</div><div class="ia-row"><div class="ia-left"><svg class="ia-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M24 10C16.27 10 10 16.27 10 24C10 31.73 16.27 38 24 38C31.73 38 38 31.73 38 24C38 16.27 31.73 10 24 10ZM24 13.5C28.42 13.5 32.2 16.23 33.72 20H16.24C17.97 16.03 21.84 13.5 24 13.5ZM13.88 26.5C13.62 25.7 13.5 24.87 13.5 24C13.5 22.18 14.04 20.48 14.97 19.06L23.75 34.27C18.66 33.84 14.63 30.64 13.88 26.5ZM24 28.5C21.51 28.5 19.5 26.49 19.5 24C19.5 21.51 21.51 19.5 24 19.5C26.49 19.5 28.5 21.51 28.5 24C28.5 26.49 26.49 28.5 24 28.5ZM24.47 34.48L17.7 22.75H32.48C32.8 24.08 33.15 25.5 33.15 27C33.15 31.06 29.83 34.39 25.7 34.48C25.29 34.49 24.88 34.49 24.47 34.48ZM34.27 24C34.27 25.13 34.07 26.21 33.7 27.21L26.31 14.43C30.93 15.65 34.27 19.45 34.27 24Z" fill="#4285F4"/><path d="M24 19.5C21.51 19.5 19.5 21.51 19.5 24C19.5 26.49 21.51 28.5 24 28.5C26.49 28.5 28.5 26.49 28.5 24C28.5 21.51 26.49 19.5 24 19.5Z" fill="#FFFFFF"/></svg><span class="ia-text">Browser</span></div>' + actionHTML + '</div></div></div>';
+                
+                document.body.style.overflow = 'hidden';
+                document.body.insertAdjacentHTML('beforeend', sheetCSS + sheetHTML);
+            }
+        });
+    ${inlineScriptClose}
+</body>
+</html>`;
+    
+    const blob = new Blob([finalHtmlOutput], { type: 'text/html;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => {
+            showToast("File " + fileName + " downloaded successfully!", true, 4000);
+        }, 500);
+    }
+}
+</script>
+</body>
+</html>
