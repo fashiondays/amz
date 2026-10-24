@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Article Generator | Fashion Inspo</title>
-    <meta name="description" content="Buat halaman artikel fashion secara manual: ubah link menjadi tombol, tambahkan gambar, dan format paragraf otomatis.">
+    <meta name="description" content="Buat halaman artikel fashion secara manual: ubah link menjadi tombol, tambahkan gambar Pinterest, dan format paragraf otomatis.">
     <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -36,8 +36,7 @@
             color: #2F2A2D;
         }
         .gen-field input[type="text"],
-        .gen-field textarea,
-        .gen-field select {
+        .gen-field textarea {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid #E0D6D0;
@@ -50,8 +49,7 @@
         }
         .gen-field textarea { min-height: 120px; }
         .gen-field input:focus,
-        .gen-field textarea:focus,
-        .gen-field select:focus {
+        .gen-field textarea:focus {
             outline: none;
             border-color: #B08D57;
             background: #fff;
@@ -82,20 +80,6 @@
         .btn:hover { opacity: 0.88; transform: translateY(-1px); }
         .btn-primary { background: #7A4E5A; color: #fff; }
         .btn-gold { background: #B08D57; color: #fff; }
-        .btn-ghost { background: #F3E8EA; color: #7A4E5A; }
-        .gen-output {
-            width: 100%;
-            min-height: 280px;
-            font-family: ui-monospace, Menlo, Consolas, monospace;
-            font-size: 0.8rem;
-            line-height: 1.5;
-            padding: 12px;
-            border: 1px solid #E0D6D0;
-            border-radius: 6px;
-            background: #FDFBFA;
-            color: #2F2A2D;
-            resize: vertical;
-        }
         .gen-preview .main-article {
             margin: 0;
             padding: 0;
@@ -105,6 +89,12 @@
         .gen-preview .main-article h1 { font-size: 1.4rem; }
         .gen-preview .main-article h2 { font-size: 1.1rem; margin: 14px 0 8px; }
         .gen-preview .main-article p { font-size: 0.95rem; margin-bottom: 12px; }
+        .gen-loading {
+            text-align: center;
+            padding: 30px;
+            color: #7A4E5A;
+            font-weight: 600;
+        }
         @media (max-width: 900px) {
             .gen-grid { grid-template-columns: 1fr; }
         }
@@ -132,9 +122,10 @@
         <div class="container" style="padding: 25px 0;">
             <h1 style="margin-bottom: 8px;">Manual Article Generator</h1>
             <p style="color: #666; margin-bottom: 20px; font-size: 0.95rem;">
-                Masukkan link tombol, daftar gambar, dan teks artikel. Paragraf pertama otomatis menjadi
-                <strong>H1</strong>, baris dengan kurang dari 60 karakter menjadi <strong>H2</strong>, dan sisanya menjadi
-                <strong>paragraf</strong>.
+                Masukkan link tombol, daftar gambar (URL langsung atau link Pinterest), dan teks artikel.
+                Paragraf pertama otomatis menjadi <strong>H1</strong>, baris dengan kurang dari 60 karakter
+                menjadi <strong>H2</strong>, dan sisanya menjadi <strong>paragraf</strong>.
+                Tombol otomatis muncul di atas (setelah judul &amp; gambar pertama) dan di akhir artikel.
             </p>
 
             <div class="gen-grid">
@@ -142,22 +133,14 @@
                 <div>
                     <div class="gen-panel">
                         <h2>1. Link Tombol</h2>
-                        <div class="gen-field">
+                        <div class="gen-field" style="margin-bottom: 0;">
                             <label for="gen-link">URL tujuan tombol</label>
                             <input type="text" id="gen-link" placeholder="https://contoh.com/produk-anda">
                             <div class="gen-hint">
                                 Link ini diubah menjadi tombol dengan teks acak:
                                 Check Now, Buy Now, Check on Amazon, Shop Now, Get the Look, dll.
+                                Tombol ditempatkan otomatis di atas (setelah judul &amp; gambar pertama) dan di akhir artikel.
                             </div>
-                        </div>
-                        <div class="gen-field" style="margin-bottom: 0;">
-                            <label for="gen-position">Posisi tombol</label>
-                            <select id="gen-position">
-                                <option value="top">Atas (setelah judul &amp; gambar pertama)</option>
-                                <option value="middle" selected>Tengah artikel</option>
-                                <option value="bottom">Akhir artikel</option>
-                                <option value="both">Atas &amp; bawah</option>
-                            </select>
                         </div>
                     </div>
 
@@ -165,9 +148,11 @@
                         <h2>2. Gambar</h2>
                         <div class="gen-field" style="margin-bottom: 0;">
                             <label for="gen-images">Daftar URL gambar (satu per baris)</label>
-                            <textarea id="gen-images" placeholder="https://contoh.com/gambar1.jpg&#10;https://contoh.com/gambar2.jpg&#10;https://contoh.com/gambar3.jpg"></textarea>
+                            <textarea id="gen-images" style="min-height: 100px;" placeholder="https://www.pinterest.com/pin/1103593083723621414/&#10;https://contoh.com/gambar-langsung.jpg"></textarea>
                             <div class="gen-hint">
-                                Gambar pertama diletakkan tepat di bawah H1, sisanya disebar otomatis ke dalam artikel.
+                                Bisa berupa link Pinterest (script otomatis mengambil gambar utama dari pin)
+                                atau URL gambar langsung (.jpg, .png, .webp, dll.).
+                                Gambar pertama diletakkan tepat di bawah H1.
                             </div>
                         </div>
                     </div>
@@ -191,29 +176,16 @@
                     <div class="gen-actions">
                         <button class="btn btn-primary" id="btn-generate" type="button">Generate</button>
                         <button class="btn btn-gold" id="btn-download" type="button">Download HTML</button>
-                        <button class="btn btn-ghost" id="btn-copy" type="button">Copy HTML</button>
                     </div>
                 </div>
 
-                <!-- ================= KOLOM KANAN : PREVIEW & OUTPUT ================= -->
+                <!-- ================= KOLOM KANAN : PREVIEW ================= -->
                 <div>
                     <div class="gen-panel gen-preview">
                         <h2>Preview Artikel</h2>
-                        <article class="main-article article-content" id="gen-preview">
+                        <div id="gen-preview">
                             <p style="color: #999; text-align: center;">Preview akan muncul di sini setelah kamu klik <strong>Generate</strong>.</p>
-                        </article>
-                    </div>
-
-                    <div class="gen-panel">
-                        <h2>Kode HTML</h2>
-                        <div class="gen-field">
-                            <label for="gen-mode">Output</label>
-                            <select id="gen-mode">
-                                <option value="full" selected>Halaman penuh (siap disimpan)</option>
-                                <option value="body">Body artikel saja</option>
-                            </select>
                         </div>
-                        <textarea id="gen-output" class="gen-output" readonly placeholder="Kode HTML akan muncul di sini..."></textarea>
                     </div>
                 </div>
             </div>
@@ -272,13 +244,10 @@
         function el(id) { return document.getElementById(id); }
 
         var linkInput    = el('gen-link');
-        var posSelect    = el('gen-position');
         var imgInput     = el('gen-images');
         var articleInput = el('gen-article');
         var slugInput    = el('gen-slug');
-        var modeSelect   = el('gen-mode');
         var previewEl    = el('gen-preview');
-        var outputEl     = el('gen-output');
 
         var lastBody     = '';
         var lastFullPage = '';
@@ -308,6 +277,65 @@
                 .slice(0, 60);
         }
 
+        function isDirectImageUrl(url) {
+            return /^https?:\/\/.+\.(jpe?g|png|gif|webp|avif|bmp|svg)(\?.*)?$/i.test(url);
+        }
+
+        function isPinterestUrl(url) {
+            return /(?:pinterest\.com\/pin\/|pin\.it\/)/i.test(url);
+        }
+
+        /* ------------------------------------------------------------------
+           Resolusi gambar: Pinterest oEmbed → URL gambar langsung
+        ------------------------------------------------------------------ */
+        async function resolveImageUrl(input) {
+            var trimmed = input.trim();
+            if (!trimmed) return null;
+
+            // Jika sudah URL gambar langsung, pakai apa adanya
+            if (isDirectImageUrl(trimmed)) return trimmed;
+
+            // Jika link Pinterest, ambil gambar via oEmbed
+            if (isPinterestUrl(trimmed)) {
+                return await resolvePinterestImage(trimmed);
+            }
+
+            // Selain itu, anggap sebagai URL gambar (CDN tanpa ekstensi)
+            return trimmed;
+        }
+
+        async function resolvePinterestImage(pinUrl) {
+            var oembedEndpoint = 'https://www.pinterest.com/oembed.json?url=' + encodeURIComponent(pinUrl);
+
+            // Percobaan 1: fetch langsung
+            try {
+                var res = await fetch(oembedEndpoint);
+                if (res.ok) {
+                    var data = await res.json();
+                    var img = data.thumbnail_url || data.url;
+                    if (img) return img;
+                }
+            } catch (e) {
+                // lanjut ke proxy
+            }
+
+            // Percobaan 2: lewat CORS proxy
+            try {
+                var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(oembedEndpoint);
+                var proxyRes = await fetch(proxyUrl);
+                if (proxyRes.ok) {
+                    var proxyData = await proxyRes.json();
+                    var proxyImg = proxyData.thumbnail_url || proxyData.url;
+                    if (proxyImg) return proxyImg;
+                }
+            } catch (e2) {
+                // gagal total
+            }
+
+            console.warn('Gagal mengambil gambar dari Pinterest:', pinUrl);
+            return null;
+        }
+
         /* ------------------------------------------------------------------
            Blok-blok HTML
         ------------------------------------------------------------------ */
@@ -331,19 +359,11 @@
         }
 
         /* ------------------------------------------------------------------
-           Render output ke textarea
+           Generator utama (async karena resolusi gambar)
         ------------------------------------------------------------------ */
-        function renderOutput() {
-            outputEl.value = (modeSelect.value === 'body') ? lastBody : lastFullPage;
-        }
-
-        /* ------------------------------------------------------------------
-           Generator utama
-        ------------------------------------------------------------------ */
-        function generate() {
+        async function generate() {
             var link     = linkInput.value.trim();
-            var position = posSelect.value;
-            var images   = imgInput.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+            var rawImages = imgInput.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
             var rawText  = articleInput.value;
 
             var paras = rawText.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
@@ -354,6 +374,18 @@
             }
 
             var titleText = paras[0];
+
+            // Tampilkan loading di preview
+            previewEl.innerHTML = '<div class="gen-loading">Mengambil gambar…</div>';
+
+            // Resolusi semua gambar (Pinterest → URL gambar)
+            var resolvedImages = [];
+            for (var r = 0; r < rawImages.length; r++) {
+                var imgUrl = await resolveImageUrl(rawImages[r]);
+                if (imgUrl) resolvedImages.push(imgUrl);
+            }
+
+            var images = resolvedImages;
 
             /* --- 1. Konversi paragraf: H1 / H2 / P --- */
             var blocks = paras.map(function (text, index) {
@@ -372,6 +404,11 @@
                 items.push(imageBlock(images[imgIdx++], titleText));
             }
 
+            // Tombol atas: setelah H1 dan gambar pertama
+            if (link) {
+                items.push(buttonBlock(link));
+            }
+
             var sinceImage = 0;
             for (var i = 1; i < blocks.length; i++) {
                 items.push(blocks[i]);
@@ -387,20 +424,9 @@
                 items.push(imageBlock(images[imgIdx++], titleText));
             }
 
-            /* --- 3. Sisipkan tombol sesuai posisi --- */
+            /* --- 3. Tombol bawah: di akhir artikel --- */
             if (link) {
-                var topIndex = Math.min(items.length, images.length ? 2 : 1);
-
-                if (position === 'top') {
-                    items.splice(topIndex, 0, buttonBlock(link));
-                } else if (position === 'middle') {
-                    items.splice(Math.floor(items.length / 2), 0, buttonBlock(link));
-                } else if (position === 'bottom') {
-                    items.push(buttonBlock(link));
-                } else if (position === 'both') {
-                    items.splice(topIndex, 0, buttonBlock(link));
-                    items.push(buttonBlock(link));
-                }
+                items.push(buttonBlock(link));
             }
 
             var bodyHtml = items.join('\n');
@@ -452,48 +478,18 @@ AD_NAT + '\n' +
             if (!lastName) lastName = 'artikel-baru';
 
             previewEl.innerHTML = bodyHtml;
-            renderOutput();
         }
 
         /* ------------------------------------------------------------------
-           Copy & Download
+           Download
         ------------------------------------------------------------------ */
-        function copyOutput() {
-            if (!outputEl.value) {
-                alert('Klik Generate dulu sebelum menyalin kode.');
-                return;
-            }
-            var text = outputEl.value;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(function () {
-                    alert('Kode HTML berhasil disalin!');
-                }).catch(function () {
-                    fallbackCopy();
-                });
-            } else {
-                fallbackCopy();
-            }
-
-            function fallbackCopy() {
-                outputEl.removeAttribute('readonly');
-                outputEl.select();
-                try { document.execCommand('copy'); alert('Kode HTML berhasil disalin!'); }
-                catch (e) { alert('Gagal menyalin. Silakan copy manual dari kotak kode.'); }
-                outputEl.setAttribute('readonly', 'readonly');
-            }
-        }
-
         function downloadOutput() {
-            if (!outputEl.value) {
+            if (!lastFullPage) {
                 alert('Klik Generate dulu sebelum download.');
                 return;
             }
-            var isFull = (modeSelect.value === 'full');
-            var filename = lastName + (isFull ? '.html' : '.txt');
-            var mime = isFull ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
-
-            var blob = new Blob([outputEl.value], { type: mime });
+            var filename = lastName + '.html';
+            var blob = new Blob([lastFullPage], { type: 'text/html;charset=utf-8' });
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
             a.href = url;
@@ -508,9 +504,7 @@ AD_NAT + '\n' +
            Event listener
         ------------------------------------------------------------------ */
         el('btn-generate').addEventListener('click', generate);
-        el('btn-copy').addEventListener('click', copyOutput);
         el('btn-download').addEventListener('click', downloadOutput);
-        modeSelect.addEventListener('change', renderOutput);
 
     })();
     </script>
