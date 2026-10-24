@@ -60,6 +60,31 @@
             margin-top: 4px;
             line-height: 1.4;
         }
+        .gen-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: #2F2A2D;
+            padding: 8px 0;
+        }
+        .gen-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #7A4E5A;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .gen-toggle code {
+            font-size: 0.8rem;
+            background: #F3E8EA;
+            color: #7A4E5A;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+        }
         .gen-actions {
             display: flex;
             flex-wrap: wrap;
@@ -80,6 +105,7 @@
         .btn:hover { opacity: 0.88; transform: translateY(-1px); }
         .btn-primary { background: #7A4E5A; color: #fff; }
         .btn-gold { background: #B08D57; color: #fff; }
+        .btn-reset { background: #E8DED8; color: #7A4E5A; }
         .gen-preview .main-article {
             margin: 0;
             padding: 0;
@@ -122,14 +148,6 @@
 
     <main>
         <div class="container" style="padding: 25px 0;">
-            <h1 style="margin-bottom: 8px;">Manual Article Generator</h1>
-            <p style="color: #666; margin-bottom: 20px; font-size: 0.95rem;">
-                Masukkan link tombol, daftar gambar (URL langsung atau link Pinterest), dan teks artikel.
-                Paragraf pertama otomatis menjadi <strong>H1</strong>, baris dengan kurang dari 60 karakter
-                menjadi <strong>H2</strong>, dan sisanya menjadi <strong>paragraf</strong>.
-                Tombol otomatis muncul di atas (setelah judul &amp; gambar pertama) dan di akhir artikel.
-            </p>
-
             <div class="gen-grid">
                 <!-- ================= KOLOM KIRI : FORM ================= -->
                 <div>
@@ -151,11 +169,6 @@
                         <div class="gen-field" style="margin-bottom: 0;">
                             <label for="gen-images">Daftar URL gambar (satu per baris)</label>
                             <textarea id="gen-images" style="min-height: 100px;" placeholder="https://www.pinterest.com/pin/1103593083723621414/&#10;https://contoh.com/gambar-langsung.jpg"></textarea>
-                            <div class="gen-hint">
-                                Bisa berupa link Pinterest (script otomatis mengambil gambar utama dari pin)
-                                atau URL gambar langsung (.jpg, .png, .webp, dll.).
-                                Gambar pertama diletakkan tepat di bawah H1.
-                            </div>
                         </div>
                     </div>
 
@@ -175,9 +188,22 @@
                         </div>
                     </div>
 
+                    <div class="gen-panel">
+                        <h2>4. Iklan</h2>
+                        <label class="gen-toggle">
+                            <input type="checkbox" id="gen-ad-top" checked>
+                            <span><code>ad1.js</code> &mdash; di atas header</span>
+                        </label>
+                        <label class="gen-toggle" style="padding-bottom: 0;">
+                            <input type="checkbox" id="gen-ad-mid" checked>
+                            <span><code>ad2.js</code> &mdash; otomatis di tengah</span>
+                        </label>
+                    </div>
+
                     <div class="gen-actions">
                         <button class="btn btn-primary" id="btn-generate" type="button">Generate</button>
                         <button class="btn btn-gold" id="btn-download" type="button">Download HTML</button>
+                        <button class="btn btn-reset" id="btn-reset" type="button">Reset</button>
                     </div>
                 </div>
 
@@ -250,12 +276,45 @@
         var imgInput     = el('gen-images');
         var articleInput = el('gen-article');
         var slugInput    = el('gen-slug');
+        var adTopInput   = el('gen-ad-top');
+        var adMidInput   = el('gen-ad-mid');
         var previewEl    = el('gen-preview');
         var statusEl     = el('gen-status');
 
         var lastBody     = '';
         var lastFullPage = '';
         var lastName     = 'artikel-baru';
+
+        /* ------------------------------------------------------------------
+           localStorage helper
+        ------------------------------------------------------------------ */
+        var LS = {
+            link:         'gen_link',
+            images:       'gen_images',
+            article:      'gen_article',
+            slug:         'gen_slug',
+            adTop:        'gen_ad_top',
+            adMid:        'gen_ad_mid',
+            lastBody:     'gen_last_body',
+            lastFullPage: 'gen_last_full_page',
+            lastName:     'gen_last_name'
+        };
+
+        function saveField(key, value) {
+            try { localStorage.setItem(key, value); }
+            catch (e) { console.warn('localStorage save failed:', key, e); }
+        }
+
+        function loadField(key, fallback) {
+            try {
+                var v = localStorage.getItem(key);
+                return v === null ? fallback : v;
+            } catch (e) { return fallback; }
+        }
+
+        function removeField(key) {
+            try { localStorage.removeItem(key); } catch (e) {}
+        }
 
         /* ------------------------------------------------------------------
            Helper umum
@@ -370,7 +429,6 @@
 
         /* ------------------------------------------------------------------
            Resolusi semua gambar secara paralel
-           Return: array of { src, original, failed }
         ------------------------------------------------------------------ */
         function resolveAllImages(rawImages) {
             return Promise.all(rawImages.map(async function (input) {
@@ -386,7 +444,6 @@
                     return { src: resolved, original: trimmed, failed: !resolved };
                 }
 
-                // Selain itu anggap URL gambar (CDN tanpa ekstensi)
                 return { src: trimmed, original: trimmed, failed: false };
             }));
         }
@@ -435,6 +492,8 @@
             var link      = linkInput.value.trim();
             var rawImages = imgInput.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
             var rawText   = articleInput.value;
+            var includeAdTop = adTopInput.checked;
+            var includeAdMid = adMidInput.checked;
 
             var paras = rawText.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
 
@@ -445,11 +504,9 @@
 
             var titleText = paras[0];
 
-            // Loading state
             previewEl.innerHTML = '<p style="color: #999; text-align: center;">Mengambil gambar… (link Pinterest bisa butuh beberapa detik)</p>';
             statusEl.innerHTML = '';
 
-            // Resolve semua gambar paralel
             var resolved = await resolveAllImages(rawImages);
             var images = resolved.filter(Boolean);
 
@@ -490,14 +547,14 @@
                 items.push(renderImage(images[imgIdx++], titleText));
             }
 
-            /* --- 3. Tombol bawah: di akhir artikel --- */
+            // Tombol bawah: di akhir artikel
             if (link) {
                 items.push(buttonBlock(link));
             }
 
             var bodyHtml = items.join('\n');
 
-            /* --- 4. Susun halaman penuh --- */
+            /* --- 3. Susun halaman penuh (dengan toggle iklan) --- */
             var metaDesc = (paras[1] || titleText).replace(/\s+/g, ' ').slice(0, 155);
             var pageTitle = titleText + ' | Fashion Inspo';
 
@@ -513,9 +570,9 @@
 '    <link rel="stylesheet" href="style.css">\n' +
 '</head>\n' +
 '<body>\n' +
-AD_TOP + '\n' +
+(includeAdTop ? AD_TOP + '\n' : '') +
 HEADER_HTML + '\n' +
-AD_MID + '\n' +
+(includeAdMid ? AD_MID + '\n' : '') +
 '    <main>\n' +
 '        <div class="container">\n' +
 '            <article class="main-article">\n' +
@@ -535,7 +592,7 @@ AD_NAT + '\n' +
 '</body>\n' +
 '</html>';
 
-            /* --- 5. Simpan & tampilkan --- */
+            /* --- 4. Simpan & tampilkan --- */
             lastBody = bodyHtml;
             lastFullPage = fullPage;
 
@@ -545,7 +602,12 @@ AD_NAT + '\n' +
 
             previewEl.innerHTML = bodyHtml;
 
-            /* --- 6. Status gambar --- */
+            // Simpan hasil generate ke localStorage
+            saveField(LS.lastBody, lastBody);
+            saveField(LS.lastFullPage, lastFullPage);
+            saveField(LS.lastName, lastName);
+
+            /* --- 5. Status gambar --- */
             var total = images.length;
             var okCount = images.filter(function (r) { return r.src; }).length;
             var failCount = total - okCount;
@@ -583,10 +645,79 @@ AD_NAT + '\n' +
         }
 
         /* ------------------------------------------------------------------
-           Event listener
+           Reset
         ------------------------------------------------------------------ */
-        el('btn-generate').addEventListener('click', generate);
-        el('btn-download').addEventListener('click', downloadOutput);
+        function resetAll() {
+            if (!confirm('Reset semua data yang tersimpan di browser? Tindakan ini tidak bisa dibatalkan.')) {
+                return;
+            }
+
+            Object.keys(LS).forEach(function (k) { removeField(LS[k]); });
+
+            linkInput.value = '';
+            imgInput.value = '';
+            articleInput.value = '';
+            slugInput.value = '';
+            adTopInput.checked = true;
+            adMidInput.checked = true;
+
+            previewEl.innerHTML = '<p style="color: #999; text-align: center;">Preview akan muncul di sini setelah kamu klik <strong>Generate</strong>.</p>';
+            statusEl.innerHTML = '';
+
+            lastBody = '';
+            lastFullPage = '';
+            lastName = 'artikel-baru';
+        }
+
+        /* ------------------------------------------------------------------
+           Persistensi: pulihkan state dari localStorage saat halaman dibuka
+        ------------------------------------------------------------------ */
+        function restoreState() {
+            linkInput.value    = loadField(LS.link, '');
+            imgInput.value     = loadField(LS.images, '');
+            articleInput.value = loadField(LS.article, '');
+            slugInput.value    = loadField(LS.slug, '');
+
+            adTopInput.checked = loadField(LS.adTop, '1') === '1';
+            adMidInput.checked = loadField(LS.adMid, '1') === '1';
+
+            lastBody     = loadField(LS.lastBody, '');
+            lastFullPage = loadField(LS.lastFullPage, '');
+            lastName     = loadField(LS.lastName, 'artikel-baru') || 'artikel-baru';
+
+            if (lastBody) {
+                previewEl.innerHTML = lastBody;
+                statusEl.innerHTML = '<span style="color:#8A8189;">Preview dipulihkan dari cache browser.</span>';
+            }
+        }
+
+        /* ------------------------------------------------------------------
+           Persistensi: simpan state saat user mengubah input
+        ------------------------------------------------------------------ */
+        function wirePersistence() {
+            linkInput.addEventListener('input', function () { saveField(LS.link, linkInput.value); });
+            imgInput.addEventListener('input', function () { saveField(LS.images, imgInput.value); });
+            articleInput.addEventListener('input', function () { saveField(LS.article, articleInput.value); });
+            slugInput.addEventListener('input', function () { saveField(LS.slug, slugInput.value); });
+            adTopInput.addEventListener('change', function () {
+                saveField(LS.adTop, adTopInput.checked ? '1' : '0');
+            });
+            adMidInput.addEventListener('change', function () {
+                saveField(LS.adMid, adMidInput.checked ? '1' : '0');
+            });
+        }
+
+        /* ------------------------------------------------------------------
+           Bootstrap
+        ------------------------------------------------------------------ */
+        document.addEventListener('DOMContentLoaded', function () {
+            restoreState();
+            wirePersistence();
+
+            el('btn-generate').addEventListener('click', generate);
+            el('btn-download').addEventListener('click', downloadOutput);
+            el('btn-reset').addEventListener('click', resetAll);
+        });
 
     })();
     </script>
