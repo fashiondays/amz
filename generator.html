@@ -89,12 +89,14 @@
         .gen-preview .main-article h1 { font-size: 1.4rem; }
         .gen-preview .main-article h2 { font-size: 1.1rem; margin: 14px 0 8px; }
         .gen-preview .main-article p { font-size: 0.95rem; margin-bottom: 12px; }
-        .gen-loading {
+        .gen-status {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #666;
             text-align: center;
-            padding: 30px;
-            color: #7A4E5A;
-            font-weight: 600;
         }
+        .gen-status .ok { color: #2e7d32; font-weight: 600; }
+        .gen-status .warn { color: #b26a00; font-weight: 600; }
         @media (max-width: 900px) {
             .gen-grid { grid-template-columns: 1fr; }
         }
@@ -183,9 +185,10 @@
                 <div>
                     <div class="gen-panel gen-preview">
                         <h2>Preview Artikel</h2>
-                        <div id="gen-preview">
+                        <article class="main-article article-content" id="gen-preview">
                             <p style="color: #999; text-align: center;">Preview akan muncul di sini setelah kamu klik <strong>Generate</strong>.</p>
-                        </div>
+                        </article>
+                        <div class="gen-status" id="gen-status"></div>
                     </div>
                 </div>
             </div>
@@ -248,13 +251,14 @@
         var articleInput = el('gen-article');
         var slugInput    = el('gen-slug');
         var previewEl    = el('gen-preview');
+        var statusEl     = el('gen-status');
 
         var lastBody     = '';
         var lastFullPage = '';
         var lastName     = 'artikel-baru';
 
         /* ------------------------------------------------------------------
-           Helper
+           Helper umum
         ------------------------------------------------------------------ */
         function escapeHtml(str) {
             return String(str)
@@ -285,65 +289,131 @@
             return /(?:pinterest\.com\/pin\/|pin\.it\/)/i.test(url);
         }
 
+        function fetchWithTimeout(url, ms) {
+            var ctrl = new AbortController();
+            var timer = setTimeout(function () { ctrl.abort(); }, ms);
+            return fetch(url, { signal: ctrl.signal }).finally(function () {
+                clearTimeout(timer);
+            });
+        }
+
+        function firstTruthy(promises) {
+            return new Promise(function (resolve) {
+                var remaining = promises.length;
+                if (remaining === 0) return resolve(null);
+                promises.forEach(function (p) {
+                    Promise.resolve(p).then(function (v) {
+                        if (v) resolve(v);
+                        else if (--remaining === 0) resolve(null);
+                    }).catch(function () {
+                        if (--remaining === 0) resolve(null);
+                    });
+                });
+            });
+        }
+
         /* ------------------------------------------------------------------
-           Resolusi gambar: Pinterest oEmbed → URL gambar langsung
+           Resolver Pinterest: 3 fallback berlapis, dijalankan paralel
         ------------------------------------------------------------------ */
-        async function resolveImageUrl(input) {
-            var trimmed = input.trim();
-            if (!trimmed) return null;
-
-            // Jika sudah URL gambar langsung, pakai apa adanya
-            if (isDirectImageUrl(trimmed)) return trimmed;
-
-            // Jika link Pinterest, ambil gambar via oEmbed
-            if (isPinterestUrl(trimmed)) {
-                return await resolvePinterestImage(trimmed);
-            }
-
-            // Selain itu, anggap sebagai URL gambar (CDN tanpa ekstensi)
-            return trimmed;
+        async function tryMicrolink(pinUrl) {
+            try {
+                var r = await fetchWithTimeout(
+                    'https://api.microlink.io/?url=' + encodeURIComponent(pinUrl), 7000
+                );
+                if (!r.ok) return null;
+                var d = await r.json();
+                if (d && d.data && d.data.image && d.data.image.url) return d.data.image.url;
+                if (d && d.data && d.data.logo && d.data.logo.url) return d.data.logo.url;
+                return null;
+            } catch (e) { return null; }
         }
 
-        async function resolvePinterestImage(pinUrl) {
-            var oembedEndpoint = 'https://www.pinterest.com/oembed.json?url=' + encodeURIComponent(pinUrl);
-
-            // Percobaan 1: fetch langsung
+        async function tryAllOriginsOgImage(pinUrl) {
             try {
-                var res = await fetch(oembedEndpoint);
-                if (res.ok) {
-                    var data = await res.json();
-                    var img = data.thumbnail_url || data.url;
-                    if (img) return img;
+                var r = await fetchWithTimeout(
+                    'https://api.allorigins.win/get?url=' + encodeURIComponent(pinUrl), 9000
+                );
+                if (!r.ok) return null;
+                var d = await r.json();
+                var html = (d && d.contents) || '';
+                if (!html) return null;
+                var m = html.match(/<meta[^>]+property=["']og:image["'][^>]*>/i);
+                if (m) {
+                    var c = m[0].match(/content=["']([^"']+)["']/i);
+                    if (c && c[1]) return c[1];
                 }
-            } catch (e) {
-                // lanjut ke proxy
-            }
+                m = html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+                if (m && m[1]) return m[1];
+                return null;
+            } catch (e) { return null; }
+        }
 
-            // Percobaan 2: lewat CORS proxy
+        async function tryOembedViaProxy(pinUrl) {
             try {
-                var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(oembedEndpoint);
-                var proxyRes = await fetch(proxyUrl);
-                if (proxyRes.ok) {
-                    var proxyData = await proxyRes.json();
-                    var proxyImg = proxyData.thumbnail_url || proxyData.url;
-                    if (proxyImg) return proxyImg;
-                }
-            } catch (e2) {
-                // gagal total
-            }
+                var oembed = 'https://www.pinterest.com/oembed.json?url=' + encodeURIComponent(pinUrl);
+                var r = await fetchWithTimeout(
+                    'https://api.allorigins.win/raw?url=' + encodeURIComponent(oembed), 9000
+                );
+                if (!r.ok) return null;
+                var d = await r.json();
+                return d.thumbnail_url || d.url || null;
+            } catch (e) { return null; }
+        }
 
-            console.warn('Gagal mengambil gambar dari Pinterest:', pinUrl);
-            return null;
+        function resolvePinterestImage(pinUrl) {
+            return firstTruthy([
+                tryMicrolink(pinUrl),
+                tryAllOriginsOgImage(pinUrl),
+                tryOembedViaProxy(pinUrl)
+            ]);
         }
 
         /* ------------------------------------------------------------------
-           Blok-blok HTML
+           Resolusi semua gambar secara paralel
+           Return: array of { src, original, failed }
+        ------------------------------------------------------------------ */
+        function resolveAllImages(rawImages) {
+            return Promise.all(rawImages.map(async function (input) {
+                var trimmed = input.trim();
+                if (!trimmed) return null;
+
+                if (isDirectImageUrl(trimmed)) {
+                    return { src: trimmed, original: trimmed, failed: false };
+                }
+
+                if (isPinterestUrl(trimmed)) {
+                    var resolved = await resolvePinterestImage(trimmed);
+                    return { src: resolved, original: trimmed, failed: !resolved };
+                }
+
+                // Selain itu anggap URL gambar (CDN tanpa ekstensi)
+                return { src: trimmed, original: trimmed, failed: false };
+            }));
+        }
+
+        /* ------------------------------------------------------------------
+           Blok HTML
         ------------------------------------------------------------------ */
         function imageBlock(url, alt) {
             return '<figure style="margin:0 0 18px;">' +
                    '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(alt) + '" loading="lazy" ' +
                    'style="width:100%;height:auto;border-radius:8px;display:block;">' +
                    '</figure>';
+        }
+
+        function pinFallbackBlock(originalUrl) {
+            return '<div style="text-align:center;margin:0 0 18px;">' +
+                   '<a href="' + escapeHtml(originalUrl) + '" target="_blank" rel="noopener" ' +
+                   'style="display:inline-block;padding:12px 22px;background:#F3E8EA;color:#7A4E5A;' +
+                   'text-decoration:none;border-radius:6px;font-weight:600;font-size:0.95rem;">' +
+                   'Lihat gambar di Pinterest</a></div>';
+        }
+
+        function renderImage(imgObj, alt) {
+            if (!imgObj) return '';
+            if (imgObj.src) return imageBlock(imgObj.src, alt);
+            if (imgObj.failed) return pinFallbackBlock(imgObj.original);
+            return '';
         }
 
         function buttonBlock(link) {
@@ -359,12 +429,12 @@
         }
 
         /* ------------------------------------------------------------------
-           Generator utama (async karena resolusi gambar)
+           Generator utama
         ------------------------------------------------------------------ */
         async function generate() {
-            var link     = linkInput.value.trim();
+            var link      = linkInput.value.trim();
             var rawImages = imgInput.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
-            var rawText  = articleInput.value;
+            var rawText   = articleInput.value;
 
             var paras = rawText.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
 
@@ -375,17 +445,13 @@
 
             var titleText = paras[0];
 
-            // Tampilkan loading di preview
-            previewEl.innerHTML = '<div class="gen-loading">Mengambil gambar…</div>';
+            // Loading state
+            previewEl.innerHTML = '<p style="color: #999; text-align: center;">Mengambil gambar… (link Pinterest bisa butuh beberapa detik)</p>';
+            statusEl.innerHTML = '';
 
-            // Resolusi semua gambar (Pinterest → URL gambar)
-            var resolvedImages = [];
-            for (var r = 0; r < rawImages.length; r++) {
-                var imgUrl = await resolveImageUrl(rawImages[r]);
-                if (imgUrl) resolvedImages.push(imgUrl);
-            }
-
-            var images = resolvedImages;
+            // Resolve semua gambar paralel
+            var resolved = await resolveAllImages(rawImages);
+            var images = resolved.filter(Boolean);
 
             /* --- 1. Konversi paragraf: H1 / H2 / P --- */
             var blocks = paras.map(function (text, index) {
@@ -401,7 +467,7 @@
 
             var imgIdx = 0;
             if (imgIdx < images.length) {
-                items.push(imageBlock(images[imgIdx++], titleText));
+                items.push(renderImage(images[imgIdx++], titleText));
             }
 
             // Tombol atas: setelah H1 dan gambar pertama
@@ -415,13 +481,13 @@
                 if (blocks[i].indexOf('<p>') === 0) {
                     sinceImage++;
                     if (sinceImage >= 2 && imgIdx < images.length) {
-                        items.push(imageBlock(images[imgIdx++], titleText));
+                        items.push(renderImage(images[imgIdx++], titleText));
                         sinceImage = 0;
                     }
                 }
             }
             while (imgIdx < images.length) {
-                items.push(imageBlock(images[imgIdx++], titleText));
+                items.push(renderImage(images[imgIdx++], titleText));
             }
 
             /* --- 3. Tombol bawah: di akhir artikel --- */
@@ -478,6 +544,22 @@ AD_NAT + '\n' +
             if (!lastName) lastName = 'artikel-baru';
 
             previewEl.innerHTML = bodyHtml;
+
+            /* --- 6. Status gambar --- */
+            var total = images.length;
+            var okCount = images.filter(function (r) { return r.src; }).length;
+            var failCount = total - okCount;
+            var parts = [];
+            if (total === 0) {
+                parts.push('<span class="warn">Tidak ada gambar yang dimasukkan.</span>');
+            } else if (failCount === 0) {
+                parts.push('<span class="ok">✓ ' + okCount + ' dari ' + total + ' gambar berhasil dimuat.</span>');
+            } else {
+                parts.push('<span class="ok">' + okCount + '</span> gambar berhasil, ' +
+                           '<span class="warn">' + failCount + '</span> gagal di-resolve ' +
+                           '(ditampilkan sebagai tombol Pinterest).');
+            }
+            statusEl.innerHTML = parts.join(' ');
         }
 
         /* ------------------------------------------------------------------
