@@ -1,221 +1,98 @@
-// ANTI-FBCLID: Clean the URL instantly so ad scripts fire correctly
-if (window.location.search.includes('fbclid=')) {
-    const cleanUrl = new URL(window.location.href);
-    cleanUrl.searchParams.delete('fbclid');
-    window.history.replaceState(null, '', cleanUrl.toString());
-}
-
-// ========================================================
-// RANDOM LINK LOADER (link.txt)
-// ========================================================
-let randomLinkList = [];
-let randomLinkFetched = false;
-
-async function fetchRandomLinks() {
-    try {
-        const res = await fetch('https://seribudollarperhari.github.io/banner/link.txt');
-        if (res.ok) {
-            const text = await res.text();
-            randomLinkList = text
-                .split('\n')
-                .map(l => l.trim())
-                .filter(l => l.length > 0);
-        }
-    } catch (e) {
-        console.log('Failed to load link.txt');
-    }
-    randomLinkFetched = true;
-}
-
-function getRandomLink() {
-    if (randomLinkList.length === 0) return '#';
-    return randomLinkList[Math.floor(Math.random() * randomLinkList.length)];
-}
-
-// Kick off the fetch as soon as possible
-fetchRandomLinks();
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('q')) return;
+})();
 
 document.addEventListener('DOMContentLoaded', function() {
-    const params = new URLSearchParams(window.location.search);
-    const keywordFromQuery = params.get('q') || '';
-    const cleanQuery = keywordFromQuery.replace(/-\d+$/, '');
+    let allKeywords = [];
+    let currentIndex = 0;
+    const batchSize = 15;
+    let isLoading = false;
+    const contentContainer = document.getElementById('auto-content-container');
+    const loader = document.getElementById('loader');
     
-    if (!cleanQuery) {
-        runAGC('Fashion Trends');
-        return;
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
     }
-
-    const targetHtml = cleanQuery + '.html';
-
-    // Check if a static generated file exists
-    fetch(targetHtml)
-        .then(response => {
-            if (response.ok) { return response.text(); }
-            throw new Error('File not found');
-        })
-        .then(htmlData => {
-            document.open();
-            document.write(htmlData);
-            document.close();
-        })
-        .catch(error => {
-            const keyword = cleanQuery.replace(/-/g, ' ').trim();
-            runAGC(keyword);
-        });
-
-    // ========================================================
-    // AGC (Auto Generated Content) via GNews API
-    // ========================================================
-    function runAGC(keyword) {
-        const detailTitle = document.getElementById('detail-title');
-        const detailTitleLink = document.getElementById('detail-title-link');
-        const detailBody = document.getElementById('detail-body');
-        const detailImage = document.getElementById('detail-image');
-        const detailImageLink = document.getElementById('detail-image-link');
-        const relatedPostsContainer = document.getElementById('related-posts-container');
-        
-        if (detailTitle) detailTitle.innerText = "Loading stories about: " + keyword + "...";
-        
-        const API_KEY = '27939599ce1878b93bcd203d6fc0eefe'; 
-        const apiUrl = `https://gnews.io/api/v4/search?q=${encodeURIComponent(keyword)}&lang=en&country=us&max=5&apikey=${API_KEY}`;
-
-        fetch(apiUrl)
-            .then(response => response.json())
+    
+    function capitalizeEachWord(str) {
+        if (!str) return '';
+        return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+    
+    function loadKeywords() {
+        fetch('keyword.txt')
+            .then(response => response.text())
             .then(data => {
-                if (data.articles && data.articles.length > 0) {
-                    const article = data.articles[0];
-                    const randomLink = getRandomLink();
-                    
-                    // ----- TITLE -----
-                    if (detailTitleLink) {
-                        detailTitleLink.innerText = article.title;
-                        detailTitleLink.href = randomLink;
-                        detailTitleLink.target = '_blank';
-                    } else if (detailTitle) {
-                        // Fallback if anchor is missing
-                        detailTitle.innerText = article.title;
-                    }
-                    
-                    // ----- IMAGE -----
-                    if (detailImage && article.image) {
-                        detailImage.src = article.image;
-                        detailImage.alt = article.title;
-                        if (detailImageLink) {
-                            detailImageLink.href = randomLink;
-                            detailImageLink.target = '_blank';
-                        }
-                    }
-
-                    // ----- BODY -----
-                    if (detailBody) {
-                        let contentHtml = `<p style="color:#8a7a68; font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase;"><em>${article.source.name} &middot; ${new Date(article.publishedAt).toLocaleDateString()}</em></p>`;
-                        contentHtml += `<p style="font-weight:500; font-size:1.15rem; color:#2d2824;">${article.description}</p>`;
-                        contentHtml += `<p>${article.content}</p>`;
-                        contentHtml += `<p><a href="${article.url}" target="_blank" rel="nofollow" style="color:#b8975f; font-weight:600; text-decoration:underline;">Read the full story &raquo;</a></p>`;
-                        detailBody.innerHTML = contentHtml;
-                    }
-                } else {
-                    fallbackAGC(keyword);
-                }
+                allKeywords = data.split('\n').map(k => k.trim()).filter(k => k.length > 0);
+                shuffleArray(allKeywords);
+                loadMoreContent();
             })
             .catch(error => {
-                console.error("API Fetch Error or limit reached:", error);
-                fallbackAGC(keyword);
+                console.error('Error loading keywords:', error);
+                if(loader) loader.textContent = 'Failed to load content.';
             });
-
-        // ----- FALLBACK -----
-        function fallbackAGC(kw) {
-            const titleCap = kw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-            const randomLink = getRandomLink();
-            
-            if (detailTitleLink) {
-                detailTitleLink.innerText = titleCap + " - Style & Trends";
-                detailTitleLink.href = randomLink;
-                detailTitleLink.target = '_blank';
-            } else if (detailTitle) {
-                detailTitle.innerText = titleCap + " - Style & Trends";
-            }
-            
-            const queryImage = kw + " fashion style";
-            const imgUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=1200&h=700&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
-            
-            if (detailImage) {
-                detailImage.src = imgUrl;
-                detailImage.alt = titleCap;
-                if (detailImageLink) {
-                    detailImageLink.href = randomLink;
-                    detailImageLink.target = '_blank';
-                }
-            }
-
-            if (detailBody) {
-                detailBody.innerHTML = `<p>Welcome to the latest editorial coverage on <strong>${titleCap}</strong>. Our team brings you curated insights and thoughtful commentary on what is shaping the style conversation right now.</p>
-                <p>Whether you are refining your personal aesthetic or simply curious about the evolving fashion landscape, understanding <em>${kw}</em> offers a fresh perspective on contemporary elegance and self-expression.</p>
-                <p>Industry insiders and style enthusiasts continue to weigh in as this story develops. We will keep you updated with considered analysis and expert perspectives as new details emerge.</p>`;
-            }
-        }
-
-        // ========================================================
-        // RELATED POSTS (Trending Now) — AGC internal links
-        // ========================================================
-        function generateRelatedPosts(kw) {
-            const hookWords = ['Breaking:', 'Trending:', 'Watch:', 'Exclusive:', 'Viral:'];
-            const suffixWords = ['Revealed', 'Explained', 'Live Update', 'News'];
-            
-            function generateSeoTitle(term) {
-                const rHook = hookWords[Math.floor(Math.random() * hookWords.length)];
-                const rSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];
-                const termCap = term.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                return `${rHook} ${termCap} ${rSuffix}`;
-            }
-
-            fetch('keyword.txt')
-                .then(res => res.text())
-                .then(data => {
-                    let keywords = data.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-                    let displayedKeywords = new Set();
-                    let relatedCount = 0;
-                    
-                    if (relatedPostsContainer) relatedPostsContainer.innerHTML = ''; 
-                    
-                    // Shuffle keywords
-                    for (let i = keywords.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [keywords[i], keywords[j]] = [keywords[j], keywords[i]];
-                    }
-
-                    keywords.forEach(term => {
-                        if (relatedCount >= 6) return;
-                        const termLower = term.toLowerCase();
-                        
-                        if (termLower === kw.toLowerCase() || displayedKeywords.has(termLower)) return;
-                        
-                        displayedKeywords.add(termLower);
-                        relatedCount++;
-                        
-                        const keywordForUrl = term.replace(/\s/g, '-').toLowerCase();
-                        const linkUrl = `index.html?q=${encodeURIComponent(keywordForUrl)}`;
-                        
-                        const queryImage = term + " fashion style";
-                        const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=250&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
-                        const newRelatedTitle = generateSeoTitle(term);
-                        
-                        const card = `
-                        <article class="content-card">
-                            <a href="${linkUrl}">
-                                <img src="${imageUrl}" alt="${newRelatedTitle}" loading="lazy">
-                                <div class="content-card-body">
-                                    <h3>${newRelatedTitle}</h3>
-                                </div>
-                            </a>
-                        </article>`;
-                        
-                        if (relatedPostsContainer) relatedPostsContainer.innerHTML += card;
-                    });
-                })
-                .catch(err => console.log('Failed to load keyword.txt for Related Posts'));
-        }
-        
-        generateRelatedPosts(keyword);
     }
+
+    function generateSeoTitle(baseKeyword) {
+        const hookWords = ['Trendy', 'Stylish', 'Modern', 'Classic', 'Elegant', 'Chic', 'Gorgeous', 'Best', 'Amazing', 'Flawless'];
+        const suffixWords = ['Fashion Inspo', 'Outfit Idea', 'Style Look', 'Fashion Look', 'Outfit Inspiration'];
+        const randomHook = hookWords[Math.floor(Math.random() * hookWords.length)];
+        const randomSuffix = suffixWords[Math.floor(Math.random() * suffixWords.length)];
+
+        return `${randomHook} ${capitalizeEachWord(baseKeyword)} ${randomSuffix}`;
+    }
+
+    function loadMoreContent() {
+        if (isLoading || currentIndex >= allKeywords.length) return;
+
+        isLoading = true;
+        if(loader) loader.style.display = 'block';
+
+        const endIndex = Math.min(currentIndex + batchSize, allKeywords.length);
+        const fragment = document.createDocumentFragment();
+        
+        for (let i = currentIndex; i < endIndex; i++) {
+            const keyword = allKeywords[i];
+            const title = generateSeoTitle(keyword);
+            const keywordForUrl = keyword.replace(/\s/g, '-').toLowerCase();
+            const linkUrl = `detail.html?q=${encodeURIComponent(keywordForUrl)}`;
+            
+            const queryImage = keyword + " fashion outfit style inspiration";
+            const imageUrl = `https://tse1.mm.bing.net/th?q=${encodeURIComponent(queryImage)}&w=400&h=600&c=7&rs=1&p=0&dpr=1.5&pid=1.7`;
+            
+            const article = document.createElement('article');
+            article.className = 'content-card';
+            article.innerHTML = `
+                <a href="${linkUrl}">
+                    <img src="${imageUrl}" alt="${title}" loading="lazy">
+                    <div class="content-card-body">
+                        <h2>${title}</h2>
+                    </div>
+                </a>
+            `;
+            fragment.appendChild(article);
+        }
+
+        if(contentContainer) contentContainer.appendChild(fragment);
+        
+        currentIndex = endIndex;
+        isLoading = false;
+        
+        if (currentIndex >= allKeywords.length) {
+            if(loader) loader.style.display = 'none';
+        }
+    }
+    
+    window.addEventListener('scroll', () => {
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+            loadMoreContent();
+        }
+    });
+    
+    loadKeywords();
 });

@@ -3,108 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Style Edit | Fashion Trends & Inspiration</title>
-    <meta name="description" content="Curated fashion inspiration, style trends, and editorial coverage from the world of design.">
+    <title>Gorgeous Fashion Inspo & Outfit Ideas | Fashion Inspo</title>
+    <meta name="description" content="Discover thousands of trendy fashion looks, elegant outfit ideas, and step-by-step styling guides to elevate your look.">
+    <meta name="keywords" content="fashion, outfit, style, fashion inspo, outfit ideas, fashion trends, styling ideas">
     <meta name="robots" content="index, follow">
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var q = params.get('q');
+            if (q) {
+                window.location.replace('detail.html' + window.location.search);
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/ad1.js'></script></center>
-    
     <header>
         <div class="container">
             <a href="index.html" class="logo-link">
-                <div class="logo">Style Edit</div>
+                <div class="logo">Fashion Inspo</div>
             </a>
             <nav>
                 <ul>
                     <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
                 </ul>
             </nav>
         </div>
     </header>
-    
-    <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/ad2.js'></script></center>
-    
     <main>
+        <div class="hero">
+            <div class="container">
+                <h1>Find Your Next Stunning Fashion Look</h1>
+                <p>Explore gorgeous outfit ideas and elegant fashion inspiration to reinvent your personal style.</p>
+            </div>
+        </div>
         <div class="container">
-            <article class="main-article">
-                <!-- Hidden SEO article (preserved from original) -->
-                <div style="display:none; visibility:hidden;">
-                    <h1>The Ultimate Guide to Making Money Online: Wealth Creation Through Trading and Cryptocurrency</h1>
-                    <p>In today's rapidly evolving digital economy, learning how to make money online has transitioned from a niche concept into a highly lucrative global industry. Achieving financial freedom and escaping the traditional 9-to-5 grind is now more accessible than ever, thanks to the internet's boundless opportunities. Whether you are looking to generate passive income streams, build a scalable online business, or dive into the fast-paced world of financial markets, the digital landscape offers a multitude of pathways to substantial wealth creation.</p>
-                    <p>Before diving into complex financial markets, it is crucial to establish foundational streams of passive income. Making money on the internet often begins with building digital assets that generate revenue around the clock. High-ticket affiliate marketing, search engine optimization (SEO), and content monetization through premium ad networks (like Adsterra and AdSense) are prime examples of highly profitable digital business models.</p>
-                </div>
-                
-                <h1 id="detail-title">
-                    <a href="#" id="detail-title-link" style="color:inherit; text-decoration:none;">Loading Latest Stories...</a>
-                </h1>
-                
-                <div id="detail-image-container" class="detail-image">
-                    <a href="#" id="detail-image-link" target="_blank">
-                        <img id="detail-image" src="" alt="">
-                    </a>
-                </div>
-                
-                <div id="detail-body" class="article-content">
-                    <p style="text-align: center; color: #8a7a68;">Fetching the latest fashion inspiration...</p>
-                </div>
-            </article>
-            
-            <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/ad3.js'></script></center>
-            
-            <section class="related-posts-section">
-                <h3 class="section-title">Trending Now</h3>
-                <div id="related-posts-container" class="content-grid"></div>
+            <section class="gallery-section">
+                <div id="auto-content-container" class="content-grid"></div>
+                <div id="loader" class="loader">Loading more styles...</div>
             </section>
         </div>
     </main>
-    
-    <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/nativ.js'></script></center>
-    
     <footer>
         <div class="container">
-            <p>&copy; 2026 Style Edit - Curated Fashion Inspiration.</p>
+            <p>&copy; 2026 Fashion Inspo - Gorgeous Outfit Ideas. All rights reserved.</p>
         </div>
     </footer>
-
-    <!-- SCRIPT ANTI IN-APP BROWSER (BOTTOM SHEET NOTIFICATION) -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const ua = navigator.userAgent || navigator.vendor || window.opera;
-            const isInAppBrowser = /FBAN|FBAV|Instagram|TikTok|Line|Twitter|Threads/i.test(ua);
-            const isAndroid = /android/i.test(ua);
-            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-
-            if (isInAppBrowser) {
-                const urlParams = new URLSearchParams(window.location.search);
-                urlParams.delete('fbclid');
-                urlParams.delete('igshid');
-                let cleanSearch = urlParams.toString();
-                cleanSearch = cleanSearch ? '?' + cleanSearch : '';
-                
-                const rawTarget = window.location.host + window.location.pathname + cleanSearch;
-                const fullHttpsTarget = encodeURIComponent("https://" + rawTarget);
-                
-                let actionHTML = '';
-                if (isAndroid) {
-                    const intentUrl = "intent://" + rawTarget + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + fullHttpsTarget + ";end";
-                    actionHTML = '<a href="' + intentUrl + '" class="ia-btn primary">Continue</a>';
-                } else if (isIOS) {
-                    actionHTML = '<span style="font-size:13px; color:#8a7a68; text-align:right; font-weight:600;">Tap <b>...</b> (menu)<br>Open in Safari</span>';
-                } else {
-                    actionHTML = '<a href="https://' + rawTarget + '" class="ia-btn primary">Continue</a>';
-                }
-
-                const sheetCSS = '<style>.ia-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(45,40,36,0.6);z-index:999998;display:flex;align-items:flex-end;justify-content:center}.ia-sheet{width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:25px 20px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;box-shadow:0 -4px 15px rgba(0,0,0,0.1);animation:slideUp 0.3s ease-out forwards}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}.ia-header{text-align:center;font-size:17px;font-weight:700;color:#2d2824;padding-bottom:15px;border-bottom:1px solid #e8e0d5;margin-bottom:20px}.ia-row{display:flex;align-items:center;justify-content:space-between}.ia-left{display:flex;align-items:center;gap:15px}.ia-icon{width:42px;height:42px}.ia-text{font-size:16px;font-weight:600;color:#2d2824}.ia-btn{background:#e8e0d5;color:#2d2824;font-size:15px;font-weight:600;padding:10px 24px;border-radius:24px;text-decoration:none;transition:0.2s}.ia-btn.primary{background:#b8975f;color:#fff}</style>';
-                
-                const sheetHTML = '<div class="ia-overlay"><div class="ia-sheet"><div class="ia-header">Open Style Edit in...</div><div class="ia-row"><div class="ia-left"><svg class="ia-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M24 10C16.27 10 10 16.27 10 24C10 31.73 16.27 38 24 38C31.73 38 38 31.73 38 24C38 16.27 31.73 10 24 10ZM24 13.5C28.42 13.5 32.2 16.23 33.72 20H16.24C17.97 16.03 21.84 13.5 24 13.5ZM13.88 26.5C13.62 25.7 13.5 24.87 13.5 24C13.5 22.18 14.04 20.48 14.97 19.06L23.75 34.27C18.66 33.84 14.63 30.64 13.88 26.5ZM24 28.5C21.51 28.5 19.5 26.49 19.5 24C19.5 21.51 21.51 19.5 24 19.5C26.49 19.5 28.5 21.51 28.5 24C28.5 26.49 26.49 28.5 24 28.5ZM24.47 34.48L17.7 22.75H32.48C32.8 24.08 33.15 25.5 33.15 27C33.15 31.06 29.83 34.39 25.7 34.48C25.29 34.49 24.88 34.49 24.47 34.48ZM34.27 24C34.27 25.13 34.07 26.21 33.7 27.21L26.31 14.43C30.93 15.65 34.27 19.45 34.27 24Z" fill="#4285F4"/><path d="M24 19.5C21.51 19.5 19.5 21.51 19.5 24C19.5 26.49 21.51 28.5 24 28.5C26.49 28.5 28.5 26.49 28.5 24C28.5 21.51 26.49 19.5 24 19.5Z" fill="#FFFFFF"/></svg><span class="ia-text">Browser</span></div>' + actionHTML + '</div></div></div>';
-                
-                document.body.style.overflow = 'hidden';
-                document.body.insertAdjacentHTML('beforeend', sheetCSS + sheetHTML);
-            }
-        });
-    </script>
     <script src="script.js"></script>
 </body>
 </html>

