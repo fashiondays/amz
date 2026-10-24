@@ -3,410 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Style Edit - Static Content Generator Tool</title>
+    <title>Article Generator | Fashion Inspo</title>
+    <meta name="description" content="Buat halaman artikel fashion secara manual: ubah link menjadi tombol, tambahkan gambar, dan format paragraf otomatis.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="style.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #faf8f5;
-            color: #3a332e;
-            padding: 40px 20px;
-            line-height: 1.6;
+        .gen-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 20px;
+            align-items: start;
         }
-        .wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 40px;
-            box-shadow: 0 1px 3px rgba(45, 40, 36, 0.04), 0 10px 40px rgba(45, 40, 36, 0.06);
-            border: 1px solid #e8e0d5;
-            border-top: 3px solid #b8975f;
+        .gen-panel {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 20px;
+            margin-bottom: 20px;
         }
-        h2 {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-style: italic;
-            color: #2d2824;
-            margin-bottom: 6px;
-            font-size: 2rem;
-            text-align: center;
-            letter-spacing: -0.01em;
+        .gen-panel h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            margin-bottom: 14px;
+            color: #2F2A2D;
         }
-        .subtitle {
-            text-align: center;
-            font-size: 0.72rem;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-            color: #8a7a68;
-            margin-bottom: 30px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #e8e0d5;
-        }
-        .form-group { margin-bottom: 22px; }
-        label {
+        .gen-field { margin-bottom: 14px; }
+        .gen-field label {
             display: block;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #2d2824;
-            font-size: 0.78rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 13px 16px;
-            border: 1px solid #e8e0d5;
-            background-color: #faf8f5;
-            font-size: 0.95rem;
-            font-family: inherit;
-            color: #3a332e;
-            transition: border-color 0.2s ease;
-        }
-        input[type="text"]:focus, textarea:focus {
-            outline: none;
-            border-color: #b8975f;
-        }
-        textarea { height: 250px; resize: vertical; line-height: 1.7; }
-        .note {
-            font-size: 0.8rem;
-            color: #8a7a68;
-            margin-top: 8px;
-            font-style: italic;
-            line-height: 1.5;
-        }
-        
-        .settings-box {
-            background-color: #f5ede0;
-            padding: 22px;
-            border-left: 3px solid #b8975f;
-            margin-bottom: 25px;
-        }
-        .settings-box h3 {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 1.15rem;
-            margin-bottom: 12px;
-            color: #2d2824;
-            font-style: italic;
-        }
-        
-        .recommendation-box {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f5ede0;
-            border-left: 3px solid #b8975f;
-            display: none;
-            transition: all 0.3s ease;
-        }
-        .recommendation-box textarea {
-            height: 100px;
-            background-color: #fff;
-            margin-bottom: 10px;
-            resize: none;
-        }
-        
-        button {
-            width: 100%;
-            background-color: #2d2824;
-            color: #fff;
-            border: none;
-            padding: 16px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            font-family: inherit;
-        }
-        button:hover { background-color: #b8975f; }
-        
-        .copy-btn {
-            background-color: #b8975f;
-            margin-top: 8px;
-        }
-        .copy-btn:hover { background-color: #9a7d4a; }
-        
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #2d2824;
-            color: #fff;
-            text-align: center;
-            padding: 16px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
             font-size: 0.9rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            transition: visibility 0.3s, bottom 0.3s;
-            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            color: #2F2A2D;
         }
-        #toast.show {
-            visibility: visible;
-            bottom: 50px;
+        .gen-field input[type="text"],
+        .gen-field textarea,
+        .gen-field select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #E0D6D0;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: #2F2A2D;
+            background: #FDFBFA;
+            resize: vertical;
+        }
+        .gen-field textarea { min-height: 120px; }
+        .gen-field input:focus,
+        .gen-field textarea:focus,
+        .gen-field select:focus {
+            outline: none;
+            border-color: #B08D57;
+            background: #fff;
+        }
+        .gen-hint {
+            font-size: 0.8rem;
+            color: #8A8189;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .gen-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 11px 22px;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+        .btn-primary { background: #7A4E5A; color: #fff; }
+        .btn-gold { background: #B08D57; color: #fff; }
+        .btn-ghost { background: #F3E8EA; color: #7A4E5A; }
+        .gen-output {
+            width: 100%;
+            min-height: 280px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            padding: 12px;
+            border: 1px solid #E0D6D0;
+            border-radius: 6px;
+            background: #FDFBFA;
+            color: #2F2A2D;
+            resize: vertical;
+        }
+        .gen-preview .main-article {
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            background: transparent;
+        }
+        .gen-preview .main-article h1 { font-size: 1.4rem; }
+        .gen-preview .main-article h2 { font-size: 1.1rem; margin: 14px 0 8px; }
+        .gen-preview .main-article p { font-size: 0.95rem; margin-bottom: 12px; }
+        @media (max-width: 900px) {
+            .gen-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-<div class="wrapper">
-    <h2>Style Edit Generator</h2>
-    <p class="subtitle">Curated Fashion Content Tool</p>
-    
-    <div class="settings-box">
-        <h3>In-App Redirect Settings</h3>
-        <label for="redirect-url">Custom Target Link (Monetization URL):</label>
-        <input type="text" id="redirect-url" placeholder="Optional: https://your-monetization-link.com/..." autocomplete="off">
-        <div class="note"><strong>Auto-saved.</strong> If left empty, the 'Continue' button will redirect to this article's own <strong>Link Article</strong>.</div>
-    </div>
-    
-    <div class="form-group">
-        <label for="thumbnail">Thumbnail Image URL:</label>
-        <input type="text" id="thumbnail" placeholder="Example: https://domain.com/fashion-image.jpg" autocomplete="off">
-        <div class="note">Enter the direct image URL.</div>
-    </div>
-    
-    <div class="form-group">
-        <label for="content">Article Content:</label>
-        <textarea id="content" placeholder="Top line must be the Article Title (H1)&#10;&#10;First paragraph goes here...&#10;&#10;Second paragraph goes here..."></textarea>
-    </div>
-    
-    <button onclick="generateAndDownload()">Generate Static HTML</button>
-    <div id="rec-box" class="recommendation-box">
-        <label for="share-preview">Ready-to-Share Content (Copy & Paste):</label>
-        <textarea id="share-preview" readonly></textarea>
-        <button class="copy-btn" onclick="copyPreview()">Copy Content & Link</button>
-    </div>
-</div>
-<div id="toast">Notification</div>
-
-<script>
-let baseDomain = "https://styleedit-fashion.github.io/"; 
-let currentRandomCode = ""; 
-
-function showToast(message, isSuccess = true, duration = 3000) {
-    const toast = document.getElementById("toast");
-    toast.textContent = message;
-    toast.style.backgroundColor = isSuccess ? "#2d2824" : "#a13c2b"; 
-    toast.className = "show";
-    setTimeout(() => { 
-        toast.className = toast.className.replace("show", ""); 
-    }, duration);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const redirectInput = document.getElementById("redirect-url");
-    const savedRedirectUrl = localStorage.getItem("customRedirectUrl");
-    
-    if (savedRedirectUrl) {
-        redirectInput.value = savedRedirectUrl;
-    }
-    redirectInput.addEventListener("input", function() {
-        localStorage.setItem("customRedirectUrl", this.value.trim());
-    });
-    redirectInput.addEventListener("change", function() {
-        showToast("Redirect link auto-saved!", true, 2000);
-    });
-});
-
-function generateRandomCode(length) {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-}
-
-fetch('domain.txt')
-    .then(response => response.text())
-    .then(data => {
-        let domain = data.trim();
-        if (domain) {
-            domain = domain.replace(/\[.*?\]\s*/g, '').replace(/\s*/gi, '').trim(); 
-            if (!domain.startsWith('http://') && !domain.startsWith('https://')) {
-                domain = 'https://' + domain;
-            }
-            if (!domain.endsWith('/')) { domain += '/'; }
-            baseDomain = domain;
-        }
-    })
-    .catch(err => {
-        console.log('domain.txt file not found.');
-    });
-
-function updatePreviewUrl(h1Text, fullUrl) {
-    const shareText = `${h1Text}\n\n${fullUrl}`;
-    const recBox = document.getElementById('rec-box');
-    const sharePreview = document.getElementById('share-preview');
-    
-    sharePreview.value = shareText;
-    recBox.style.display = 'block';
-    
-    recBox.style.backgroundColor = '#e8f0d8';
-    recBox.style.borderLeftColor = '#7a9a4a';
-    setTimeout(() => {
-        recBox.style.backgroundColor = '#f5ede0';
-        recBox.style.borderLeftColor = '#b8975f';
-    }, 1500);
-}
-
-function copyPreview() {
-    const copyText = document.getElementById("share-preview");
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); 
-    
-    navigator.clipboard.writeText(copyText.value).then(() => {
-        showToast("Content and link copied!", true);
-    }).catch(err => {
-        document.execCommand("copy");
-        showToast("Content and link copied!", true);
-    });
-}
-
-function generateAndDownload() {
-    const thumbnailVal = document.getElementById('thumbnail').value.trim();
-    const contentInputVal = document.getElementById('content').value.trim();
-    
-    if (!thumbnailVal || !contentInputVal) {
-        showToast('Please fill in both the Thumbnail URL and Article Content!', false);
-        return;
-    }
-    
-    const lines = contentInputVal.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-    if (lines.length < 1) {
-        showToast('Article must have at least a Title (H1)!', false);
-        return;
-    }
-    
-    showToast("Processing HTML file...", true, 2000);
-    
-    const rawH1Title = lines[0]; 
-    const textOnlyH1Title = rawH1Title.replace(/<[^>]*>?/gm, ''); 
-    const h1Title = textOnlyH1Title.replace(/"/g, '&quot;'); 
-    
-    const remainingParagraphs = lines.slice(1);
-    currentRandomCode = generateRandomCode(12);
-    const articleFullUrl = baseDomain + currentRandomCode;
-    updatePreviewUrl(textOnlyH1Title, articleFullUrl);
-    
-    let customInputUrl = document.getElementById("redirect-url").value.trim();
-    let targetUrl = customInputUrl !== "" ? customInputUrl : articleFullUrl;
-    
-    if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-        targetUrl = 'https://' + targetUrl;
-    }
-    
-    let parsedUrl;
-    try {
-        parsedUrl = new URL(targetUrl);
-    } catch(e) {
-        parsedUrl = new URL("https://" + targetUrl.replace(/^https?:\/\//, ''));
-    }
-    
-    let intentTarget = parsedUrl.host + parsedUrl.pathname + parsedUrl.search;
-    let normalHref = parsedUrl.href;
-    let fallbackEncoded = encodeURIComponent(normalHref);
-    
-    const fileName = currentRandomCode + '.html';
-    
-    const tagScript = '<scr' + 'ipt type="text/javascript" src="';
-    const tagClose = '"></scr' + 'ipt>';
-    const inlineScriptOpen = '<scr' + 'ipt>';
-    const inlineScriptClose = '</scr' + 'ipt>';
-    
-    let imageLinkHtml = `<div class="detail-image"><a href="${thumbnailVal}" target="_blank" title="View Image"><img src="${thumbnailVal}" alt="${h1Title}"></a></div>`;
-    let pBodyHtml = remainingParagraphs.map(p => `<p>${p}</p>`).join('\n');
-    
-    let finalHtmlOutput = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${h1Title} | Style Edit</title>
-    <meta name="robots" content="index, follow">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <center>${tagScript}https://seribudollarperhari.github.io/banner/ad1.js${tagClose}</center>
     <header>
         <div class="container">
-            <a href="index.html" class="logo-link"><div class="logo">Style Edit</div></a>
+            <a href="index.html" class="logo-link">
+                <div class="logo">Fashion Inspo</div>
+            </a>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="generator.html">Generator</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </nav>
         </div>
     </header>
-    <center>${tagScript}https://seribudollarperhari.github.io/banner/ad2.js${tagClose}</center>
-    
+
     <main>
-        <div class="container">
-            <article class="main-article">
-                <h1 id="detail-title">${h1Title}</h1>
-                ${imageLinkHtml}
-                <div id="detail-body" class="article-content">
-                    ${pBodyHtml}
+        <div class="container" style="padding: 25px 0;">
+            <h1 style="margin-bottom: 8px;">Manual Article Generator</h1>
+            <p style="color: #666; margin-bottom: 20px; font-size: 0.95rem;">
+                Masukkan link tombol, daftar gambar, dan teks artikel. Paragraf pertama otomatis menjadi
+                <strong>H1</strong>, baris dengan kurang dari 60 karakter menjadi <strong>H2</strong>, dan sisanya menjadi
+                <strong>paragraf</strong>.
+            </p>
+
+            <div class="gen-grid">
+                <!-- ================= KOLOM KIRI : FORM ================= -->
+                <div>
+                    <div class="gen-panel">
+                        <h2>1. Link Tombol</h2>
+                        <div class="gen-field">
+                            <label for="gen-link">URL tujuan tombol</label>
+                            <input type="text" id="gen-link" placeholder="https://contoh.com/produk-anda">
+                            <div class="gen-hint">
+                                Link ini diubah menjadi tombol dengan teks acak:
+                                Check Now, Buy Now, Check on Amazon, Shop Now, Get the Look, dll.
+                            </div>
+                        </div>
+                        <div class="gen-field" style="margin-bottom: 0;">
+                            <label for="gen-position">Posisi tombol</label>
+                            <select id="gen-position">
+                                <option value="top">Atas (setelah judul &amp; gambar pertama)</option>
+                                <option value="middle" selected>Tengah artikel</option>
+                                <option value="bottom">Akhir artikel</option>
+                                <option value="both">Atas &amp; bawah</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="gen-panel">
+                        <h2>2. Gambar</h2>
+                        <div class="gen-field" style="margin-bottom: 0;">
+                            <label for="gen-images">Daftar URL gambar (satu per baris)</label>
+                            <textarea id="gen-images" placeholder="https://contoh.com/gambar1.jpg&#10;https://contoh.com/gambar2.jpg&#10;https://contoh.com/gambar3.jpg"></textarea>
+                            <div class="gen-hint">
+                                Gambar pertama diletakkan tepat di bawah H1, sisanya disebar otomatis ke dalam artikel.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gen-panel">
+                        <h2>3. Artikel</h2>
+                        <div class="gen-field">
+                            <label for="gen-article">Teks artikel (satu paragraf per baris)</label>
+                            <textarea id="gen-article" style="min-height: 220px;" placeholder="Judul Artikel Kamu&#10;Sub Judul Pendek&#10;Paragraf panjang yang akan otomatis berubah menjadi elemen paragraf karena jumlah karakternya lebih dari enam puluh.&#10;Tips Singkat&#10;Paragraf panjang berikutnya..."></textarea>
+                            <div class="gen-hint">
+                                Baris ke-1 = H1 &middot; baris &lt; 60 karakter = H2 &middot; baris lainnya = &lt;p&gt;
+                            </div>
+                        </div>
+                        <div class="gen-field" style="margin-bottom: 0;">
+                            <label for="gen-slug">Nama file (slug)</label>
+                            <input type="text" id="gen-slug" placeholder="artikel-fashion-baru">
+                            <div class="gen-hint">Dipakai sebagai nama file saat download. Kosongkan untuk dibuat otomatis dari judul.</div>
+                        </div>
+                    </div>
+
+                    <div class="gen-actions">
+                        <button class="btn btn-primary" id="btn-generate" type="button">Generate</button>
+                        <button class="btn btn-gold" id="btn-download" type="button">Download HTML</button>
+                        <button class="btn btn-ghost" id="btn-copy" type="button">Copy HTML</button>
+                    </div>
                 </div>
-            </article>
-            
-            <center>${tagScript}https://seribudollarperhari.github.io/banner/ad3.js${tagClose}</center>
+
+                <!-- ================= KOLOM KANAN : PREVIEW & OUTPUT ================= -->
+                <div>
+                    <div class="gen-panel gen-preview">
+                        <h2>Preview Artikel</h2>
+                        <article class="main-article article-content" id="gen-preview">
+                            <p style="color: #999; text-align: center;">Preview akan muncul di sini setelah kamu klik <strong>Generate</strong>.</p>
+                        </article>
+                    </div>
+
+                    <div class="gen-panel">
+                        <h2>Kode HTML</h2>
+                        <div class="gen-field">
+                            <label for="gen-mode">Output</label>
+                            <select id="gen-mode">
+                                <option value="full" selected>Halaman penuh (siap disimpan)</option>
+                                <option value="body">Body artikel saja</option>
+                            </select>
+                        </div>
+                        <textarea id="gen-output" class="gen-output" readonly placeholder="Kode HTML akan muncul di sini..."></textarea>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
-    <center>${tagScript}https://seribudollarperhari.github.io/banner/nativ.js${tagClose}</center>
+
     <footer>
-        <div class="container"><p>&copy; 2026 Style Edit - Curated Fashion Inspiration.</p></div>
+        <div class="container">
+            <p>&copy; 2026 Fashion Inspo - Gorgeous Outfit Ideas. All rights reserved.</p>
+        </div>
     </footer>
-    
-    ${inlineScriptOpen}
-        if (window.location.search.includes('fbclid=')) {
-            let cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete('fbclid');
-            window.history.replaceState(null, '', cleanUrl.toString());
+
+    <script>
+    (function () {
+        'use strict';
+
+        /* ------------------------------------------------------------------
+           Teks tombol acak
+        ------------------------------------------------------------------ */
+        var BUTTON_TEXTS = [
+            'Check Now', 'Buy Now', 'Check on Amazon', 'Shop Now', 'Get the Look',
+            'See Details', 'View Offer', 'Grab Yours', 'Order Now', 'Discover More',
+            'Shop the Look', 'Buy on Amazon', 'Claim Offer', 'See the Deal', 'Explore Now'
+        ];
+
+        /* ------------------------------------------------------------------
+           Template iklan & header untuk halaman hasil
+        ------------------------------------------------------------------ */
+        var AD_TOP = '<center><script type="text/javascript" src="https://seribudollarperhari.github.io/banner/ad1.js"><\/script></center>';
+        var AD_MID = '<center><script type="text/javascript" src="https://seribudollarperhari.github.io/banner/ad2.js"><\/script></center>';
+        var AD_BOT = '<center><script type="text/javascript" src="https://seribudollarperhari.github.io/banner/ad3.js"><\/script></center>';
+        var AD_NAT = '<center><script type="text/javascript" src="https://seribudollarperhari.github.io/banner/nativ.js"><\/script></center>';
+
+        var HEADER_HTML = [
+            '    <header>',
+            '        <div class="container">',
+            '            <a href="index.html" class="logo-link">',
+            '                <div class="logo">Fashion Inspo</div>',
+            '            </a>',
+            '            <nav>',
+            '                <ul>',
+            '                    <li><a href="index.html">Home</a></li>',
+            '                    <li><a href="generator.html">Generator</a></li>',
+            '                    <li><a href="about.html">About Us</a></li>',
+            '                    <li><a href="contact.html">Contact</a></li>',
+            '                    <li><a href="privacy.html">Privacy Policy</a></li>',
+            '                </ul>',
+            '            </nav>',
+            '        </div>',
+            '    </header>'
+        ].join('\n');
+
+        /* ------------------------------------------------------------------
+           Referensi elemen
+        ------------------------------------------------------------------ */
+        function el(id) { return document.getElementById(id); }
+
+        var linkInput    = el('gen-link');
+        var posSelect    = el('gen-position');
+        var imgInput     = el('gen-images');
+        var articleInput = el('gen-article');
+        var slugInput    = el('gen-slug');
+        var modeSelect   = el('gen-mode');
+        var previewEl    = el('gen-preview');
+        var outputEl     = el('gen-output');
+
+        var lastBody     = '';
+        var lastFullPage = '';
+        var lastName     = 'artikel-baru';
+
+        /* ------------------------------------------------------------------
+           Helper
+        ------------------------------------------------------------------ */
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
-        
-        document.addEventListener("DOMContentLoaded", function() {
-            const ua = navigator.userAgent || navigator.vendor || window.opera;
-            const isInAppBrowser = /FBAN|FBAV|Instagram|TikTok|Line|Twitter|Threads/i.test(ua);
-            const isAndroid = /android/i.test(ua);
-            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-            
-            if (isInAppBrowser) {
-                let actionHTML = '';
-                if (isAndroid) {
-                    const intentUrl = "intent://${intentTarget}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${fallbackEncoded};end";
-                    actionHTML = '<a href="' + intentUrl + '" class="ia-btn primary">Continue</a>';
-                } else if (isIOS) {
-                    actionHTML = '<span style="font-size:13px; color:#8a7a68; text-align:right; font-weight:600;">Tap <b>...</b> (menu)<br>Open in Safari</span>';
-                } else {
-                    actionHTML = '<a href="${normalHref}" class="ia-btn primary">Continue</a>';
-                }
-                const sheetCSS = '<style>.ia-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(45,40,36,0.6);z-index:999998;display:flex;align-items:flex-end;justify-content:center}.ia-sheet{width:100%;max-width:600px;background:#fff;border-radius:20px 20px 0 0;padding:25px 20px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;box-shadow:0 -4px 15px rgba(0,0,0,0.1);animation:slideUp 0.3s ease-out forwards}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}.ia-header{text-align:center;font-size:17px;font-weight:700;color:#2d2824;padding-bottom:15px;border-bottom:1px solid #e8e0d5;margin-bottom:20px}.ia-row{display:flex;align-items:center;justify-content:space-between}.ia-left{display:flex;align-items:center;gap:15px}.ia-icon{width:42px;height:42px}.ia-text{font-size:16px;font-weight:600;color:#2d2824}.ia-btn{background:#e8e0d5;color:#2d2824;font-size:15px;font-weight:600;padding:10px 24px;border-radius:24px;text-decoration:none;transition:0.2s}.ia-btn.primary{background:#b8975f;color:#fff}</style>';
-                
-                const sheetHTML = '<div class="ia-overlay"><div class="ia-sheet"><div class="ia-header">Open Style Edit in...</div><div class="ia-row"><div class="ia-left"><svg class="ia-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path d="M24 10C16.27 10 10 16.27 10 24C10 31.73 16.27 38 24 38C31.73 38 38 31.73 38 24C38 16.27 31.73 10 24 10ZM24 13.5C28.42 13.5 32.2 16.23 33.72 20H16.24C17.97 16.03 21.84 13.5 24 13.5ZM13.88 26.5C13.62 25.7 13.5 24.87 13.5 24C13.5 22.18 14.04 20.48 14.97 19.06L23.75 34.27C18.66 33.84 14.63 30.64 13.88 26.5ZM24 28.5C21.51 28.5 19.5 26.49 19.5 24C19.5 21.51 21.51 19.5 24 19.5C26.49 19.5 28.5 21.51 28.5 24C28.5 26.49 26.49 28.5 24 28.5ZM24.47 34.48L17.7 22.75H32.48C32.8 24.08 33.15 25.5 33.15 27C33.15 31.06 29.83 34.39 25.7 34.48C25.29 34.49 24.88 34.49 24.47 34.48ZM34.27 24C34.27 25.13 34.07 26.21 33.7 27.21L26.31 14.43C30.93 15.65 34.27 19.45 34.27 24Z" fill="#4285F4"/><path d="M24 19.5C21.51 19.5 19.5 21.51 19.5 24C19.5 26.49 21.51 28.5 24 28.5C26.49 28.5 28.5 26.49 28.5 24C28.5 21.51 26.49 19.5 24 19.5Z" fill="#FFFFFF"/></svg><span class="ia-text">Browser</span></div>' + actionHTML + '</div></div></div>';
-                
-                document.body.style.overflow = 'hidden';
-                document.body.insertAdjacentHTML('beforeend', sheetCSS + sheetHTML);
+
+        function randomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function makeSlug(text) {
+            return String(text)
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .slice(0, 60);
+        }
+
+        /* ------------------------------------------------------------------
+           Blok-blok HTML
+        ------------------------------------------------------------------ */
+        function imageBlock(url, alt) {
+            return '<figure style="margin:0 0 18px;">' +
+                   '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(alt) + '" loading="lazy" ' +
+                   'style="width:100%;height:auto;border-radius:8px;display:block;">' +
+                   '</figure>';
+        }
+
+        function buttonBlock(link) {
+            if (!link) return '';
+            var text = randomItem(BUTTON_TEXTS);
+            return '<div style="text-align:center;margin:26px 0;">' +
+                   '<a href="' + escapeHtml(link) + '" target="_blank" rel="nofollow sponsored noopener" ' +
+                   'style="display:inline-block;padding:15px 34px;background:#7A4E5A;color:#ffffff;' +
+                   'text-decoration:none;border-radius:6px;font-weight:700;font-size:1.05rem;' +
+                   'letter-spacing:0.3px;box-shadow:0 4px 12px rgba(122,78,90,0.35);">' +
+                   text +
+                   '</a></div>';
+        }
+
+        /* ------------------------------------------------------------------
+           Render output ke textarea
+        ------------------------------------------------------------------ */
+        function renderOutput() {
+            outputEl.value = (modeSelect.value === 'body') ? lastBody : lastFullPage;
+        }
+
+        /* ------------------------------------------------------------------
+           Generator utama
+        ------------------------------------------------------------------ */
+        function generate() {
+            var link     = linkInput.value.trim();
+            var position = posSelect.value;
+            var images   = imgInput.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+            var rawText  = articleInput.value;
+
+            var paras = rawText.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+
+            if (paras.length === 0) {
+                alert('Teks artikel masih kosong. Isi minimal satu baris judul.');
+                return;
             }
-        });
-    ${inlineScriptClose}
-</body>
-</html>`;
-    
-    const blob = new Blob([finalHtmlOutput], { type: 'text/html;charset=utf-8;' });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", fileName);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        setTimeout(() => {
-            showToast("File " + fileName + " downloaded successfully!", true, 4000);
-        }, 500);
-    }
-}
-</script>
+
+            var titleText = paras[0];
+
+            /* --- 1. Konversi paragraf: H1 / H2 / P --- */
+            var blocks = paras.map(function (text, index) {
+                var safe = escapeHtml(text);
+                if (index === 0) return '<h1>' + safe + '</h1>';
+                if (text.length < 60) return '<h2>' + safe + '</h2>';
+                return '<p>' + safe + '</p>';
+            });
+
+            /* --- 2. Susun blok + gambar --- */
+            var items = [];
+            items.push(blocks[0]);
+
+            var imgIdx = 0;
+            if (imgIdx < images.length) {
+                items.push(imageBlock(images[imgIdx++], titleText));
+            }
+
+            var sinceImage = 0;
+            for (var i = 1; i < blocks.length; i++) {
+                items.push(blocks[i]);
+                if (blocks[i].indexOf('<p>') === 0) {
+                    sinceImage++;
+                    if (sinceImage >= 2 && imgIdx < images.length) {
+                        items.push(imageBlock(images[imgIdx++], titleText));
+                        sinceImage = 0;
+                    }
+                }
+            }
+            while (imgIdx < images.length) {
+                items.push(imageBlock(images[imgIdx++], titleText));
+            }
+
+            /* --- 3. Sisipkan tombol sesuai posisi --- */
+            if (link) {
+                var topIndex = Math.min(items.length, images.length ? 2 : 1);
+
+                if (position === 'top') {
+                    items.splice(topIndex, 0, buttonBlock(link));
+                } else if (position === 'middle') {
+                    items.splice(Math.floor(items.length / 2), 0, buttonBlock(link));
+                } else if (position === 'bottom') {
+                    items.push(buttonBlock(link));
+                } else if (position === 'both') {
+                    items.splice(topIndex, 0, buttonBlock(link));
+                    items.push(buttonBlock(link));
+                }
+            }
+
+            var bodyHtml = items.join('\n');
+
+            /* --- 4. Susun halaman penuh --- */
+            var metaDesc = (paras[1] || titleText).replace(/\s+/g, ' ').slice(0, 155);
+            var pageTitle = titleText + ' | Fashion Inspo';
+
+            var fullPage =
+'<!DOCTYPE html>\n' +
+'<html lang="en">\n' +
+'<head>\n' +
+'    <meta charset="UTF-8">\n' +
+'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'    <title>' + escapeHtml(pageTitle) + '</title>\n' +
+'    <meta name="description" content="' + escapeHtml(metaDesc) + '">\n' +
+'    <meta name="robots" content="index, follow">\n' +
+'    <link rel="stylesheet" href="style.css">\n' +
+'</head>\n' +
+'<body>\n' +
+AD_TOP + '\n' +
+HEADER_HTML + '\n' +
+AD_MID + '\n' +
+'    <main>\n' +
+'        <div class="container">\n' +
+'            <article class="main-article">\n' +
+'                <div class="article-content">\n' +
+bodyHtml + '\n' +
+'                </div>\n' +
+'            </article>\n' +
+'        </div>\n' +
+'    </main>\n' +
+AD_BOT + '\n' +
+AD_NAT + '\n' +
+'    <footer>\n' +
+'        <div class="container">\n' +
+'            <p>&copy; 2026 Fashion Inspo - Gorgeous Outfit Ideas. All rights reserved.</p>\n' +
+'        </div>\n' +
+'    </footer>\n' +
+'</body>\n' +
+'</html>';
+
+            /* --- 5. Simpan & tampilkan --- */
+            lastBody = bodyHtml;
+            lastFullPage = fullPage;
+
+            var slug = slugInput.value.trim();
+            lastName = slug ? makeSlug(slug) : makeSlug(titleText);
+            if (!lastName) lastName = 'artikel-baru';
+
+            previewEl.innerHTML = bodyHtml;
+            renderOutput();
+        }
+
+        /* ------------------------------------------------------------------
+           Copy & Download
+        ------------------------------------------------------------------ */
+        function copyOutput() {
+            if (!outputEl.value) {
+                alert('Klik Generate dulu sebelum menyalin kode.');
+                return;
+            }
+            var text = outputEl.value;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function () {
+                    alert('Kode HTML berhasil disalin!');
+                }).catch(function () {
+                    fallbackCopy();
+                });
+            } else {
+                fallbackCopy();
+            }
+
+            function fallbackCopy() {
+                outputEl.removeAttribute('readonly');
+                outputEl.select();
+                try { document.execCommand('copy'); alert('Kode HTML berhasil disalin!'); }
+                catch (e) { alert('Gagal menyalin. Silakan copy manual dari kotak kode.'); }
+                outputEl.setAttribute('readonly', 'readonly');
+            }
+        }
+
+        function downloadOutput() {
+            if (!outputEl.value) {
+                alert('Klik Generate dulu sebelum download.');
+                return;
+            }
+            var isFull = (modeSelect.value === 'full');
+            var filename = lastName + (isFull ? '.html' : '.txt');
+            var mime = isFull ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
+
+            var blob = new Blob([outputEl.value], { type: mime });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }
+
+        /* ------------------------------------------------------------------
+           Event listener
+        ------------------------------------------------------------------ */
+        el('btn-generate').addEventListener('click', generate);
+        el('btn-copy').addEventListener('click', copyOutput);
+        el('btn-download').addEventListener('click', downloadOutput);
+        modeSelect.addEventListener('change', renderOutput);
+
+    })();
+    </script>
 </body>
 </html>
